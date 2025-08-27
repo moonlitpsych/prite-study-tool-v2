@@ -1,6 +1,6 @@
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import { router, publicProcedure, protectedProcedure, schemas } from '../lib/trpc';
+import { router, publicProcedure, protectedProcedure, schemas } from '../lib/trpc.js';
 
 const questionSchema = z.object({
   text: z.string().min(10).max(2000),

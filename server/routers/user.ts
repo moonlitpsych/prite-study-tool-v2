@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { router, protectedProcedure, schemas } from '../lib/trpc';
+import { router, protectedProcedure, schemas } from '../lib/trpc.js';
 
 export const userRouter = router({
   // Add PRITE score

@@ -2,7 +2,7 @@ import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { router, publicProcedure, protectedProcedure } from '../lib/trpc';
+import { router, publicProcedure, protectedProcedure } from '../lib/trpc.js';
 
 const registerSchema = z.object({
   email: z.string().email(),

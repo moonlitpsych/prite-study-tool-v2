@@ -1,10 +1,10 @@
-import { router } from '../lib/trpc';
-import { authRouter } from './auth';
-import { questionRouter } from './questions';
-import { studyRouter } from './study';
-import { communityRouter } from './community';
-import { userRouter } from './user';
-import { uploadRouter } from './upload';
+import { router } from '../lib/trpc.js';
+import { authRouter } from './auth.js';
+import { questionRouter } from './questions.js';
+import { studyRouter } from './study.js';
+import { communityRouter } from './community.js';
+import { userRouter } from './user.js';
+import { uploadRouter } from './upload.js';
 
 export const appRouter = router({
   auth: authRouter,

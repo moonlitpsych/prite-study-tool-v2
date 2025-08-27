@@ -1,7 +1,7 @@
 import { inferAsyncReturnType } from '@trpc/server';
 import { CreateExpressContextOptions } from '@trpc/server/adapters/express';
 import jwt from 'jsonwebtoken';
-import { prisma } from './prisma';
+import { prisma } from './prisma.js';
 
 export const createContext = async ({ req }: CreateExpressContextOptions) => {
   // Get user from JWT token

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { router, publicProcedure, protectedProcedure, schemas } from '../lib/trpc';
+import { router, publicProcedure, protectedProcedure, schemas } from '../lib/trpc.js';
 
 export const communityRouter = router({
   // Get community leaderboard

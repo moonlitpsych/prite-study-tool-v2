@@ -1,7 +1,7 @@
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import { router, protectedProcedure } from '../lib/trpc';
-import { processQuestionImage, processQuestionText, generateExplanation } from '../lib/ai-processing';
+import { router, protectedProcedure } from '../lib/trpc.js';
+import { processQuestionImage, processQuestionText, generateExplanation } from '../lib/ai-processing.js';
 
 export const uploadRouter = router({
   // Process image with AI (camera/file upload)
