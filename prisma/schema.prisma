@@ -1,0 +1,205 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  username  String   @unique
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // PRITE specific info
+  pgyLevel     Int?    // 1, 2, 3, 4
+  targetScore  Int?    // Their PRITE score goal
+  institution  String?
+  specialty    String? // Psychiatry, Child Psychiatry, etc.
+  
+  // Profile settings
+  isPublic     Boolean @default(true)
+  avatar       String?
+  bio          String?
+
+  // Community metrics
+  contributionScore Int @default(0) // Points for contributing questions
+  reputation        Int @default(0) // Community rating
+
+  // Relationships
+  questions       Question[]
+  studyRecords    StudyRecord[]
+  priteScores     PriteScore[]
+  questionReviews QuestionReview[]
+  studySessions   StudySession[]
+  
+  // Community interactions
+  questionVotes   QuestionVote[]
+  questionReports QuestionReport[]
+
+  @@map("users")
+}
+
+model Question {
+  id        String   @id @default(cuid())
+  text      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Question content
+  options      Json // Array of {label: "A", text: "Option text"}
+  correctAnswers String[] // ["A", "B"] for multiple correct
+  explanation    String?
+  
+  // Categorization
+  category    String // "Adult Psychiatry", "Child", "Neurology", etc.
+  subcategory String?
+  examPart    String // "Part 1", "Part 2"
+  difficulty  String @default("medium") // easy, medium, hard
+  topics      String[] // ["Depression", "Medication", "DSM-5"]
+  
+  // Community features
+  isPublic      Boolean @default(false)
+  isVerified    Boolean @default(false) // Reviewed and approved
+  timesStudied  Int     @default(0)
+  averageRating Float?
+  
+  // Relationships
+  createdBy       User             @relation(fields: [createdById], references: [id])
+  createdById     String
+  studyRecords    StudyRecord[]
+  questionReviews QuestionReview[]
+  votes           QuestionVote[]
+  reports         QuestionReport[]
+  
+  @@map("questions")
+}
+
+model StudyRecord {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  
+  // Study data
+  wasCorrect     Boolean
+  timeSpent      Int     // milliseconds
+  confidence     String  // "low", "medium", "high"
+  
+  // Spaced repetition data
+  easeFactor     Float   @default(2.5)
+  repetition     Int     @default(0)
+  interval       Int     @default(0)
+  nextReviewDate DateTime
+  
+  // Relationships
+  user       User     @relation(fields: [userId], references: [id])
+  userId     String
+  question   Question @relation(fields: [questionId], references: [id])
+  questionId String
+  session    StudySession? @relation(fields: [sessionId], references: [id])
+  sessionId  String?
+  
+  @@unique([userId, questionId])
+  @@map("study_records")
+}
+
+model StudySession {
+  id        String   @id @default(cuid())
+  startedAt DateTime @default(now())
+  endedAt   DateTime?
+  
+  // Session stats
+  totalQuestions   Int @default(0)
+  correctAnswers   Int @default(0)
+  totalTimeSpent   Int @default(0) // milliseconds
+  
+  // Relationships
+  user    User          @relation(fields: [userId], references: [id])
+  userId  String
+  records StudyRecord[]
+  
+  @@map("study_sessions")
+}
+
+model PriteScore {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  
+  // Score data
+  examDate       DateTime
+  totalScore     Int
+  percentile     Float?
+  
+  // Category scores
+  adultPsychiatry     Int?
+  childPsychiatry     Int?
+  neurology          Int?
+  psychology         Int?
+  substance          Int?
+  emergency          Int?
+  consultation       Int?
+  
+  // Relationships
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+  
+  @@map("prite_scores")
+}
+
+model QuestionReview {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  
+  // Review content
+  rating      Int     // 1-5 stars
+  feedback    String?
+  isHelpful   Boolean @default(true)
+  
+  // Review type
+  reviewType  String  // "accuracy", "clarity", "difficulty"
+  
+  // Relationships
+  user       User     @relation(fields: [userId], references: [id])
+  userId     String
+  question   Question @relation(fields: [questionId], references: [id])
+  questionId String
+  
+  @@unique([userId, questionId])
+  @@map("question_reviews")
+}
+
+model QuestionVote {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  
+  voteType  String   // "up", "down"
+  
+  // Relationships
+  user       User     @relation(fields: [userId], references: [id])
+  userId     String
+  question   Question @relation(fields: [questionId], references: [id])
+  questionId String
+  
+  @@unique([userId, questionId])
+  @@map("question_votes")
+}
+
+model QuestionReport {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  
+  reason      String  // "incorrect", "inappropriate", "duplicate"
+  description String?
+  status      String  @default("pending") // "pending", "resolved", "dismissed"
+  
+  // Relationships
+  user       User     @relation(fields: [userId], references: [id])
+  userId     String
+  question   Question @relation(fields: [questionId], references: [id])
+  questionId String
+  
+  @@map("question_reports")
+}
