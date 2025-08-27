@@ -34,10 +34,11 @@ export const questionRouter = router({
   getAll: publicProcedure
     .input(questionFilterSchema)
     .query(async ({ input, ctx }) => {
-      const { limit, offset, search, ...filters } = input;
+      const { limit, offset, search, createdBy, ...filters } = input;
       
       const where = {
         ...filters,
+        ...(createdBy && { createdById: createdBy }),
         ...(search && {
           OR: [
             { text: { contains: search, mode: 'insensitive' as const } },
@@ -88,11 +89,15 @@ export const questionRouter = router({
       ]);
 
       // Add computed fields
-      const questionsWithStats = questions.map(question => {
-        const upvotes = question.votes.filter(v => v.voteType === 'up').length;
-        const downvotes = question.votes.filter(v => v.voteType === 'down').length;
-        const averageRating = question.questionReviews.length > 0
-          ? question.questionReviews.reduce((sum, r) => sum + r.rating, 0) / question.questionReviews.length
+      const questionsWithStats = questions.map((question: any) => {
+        const votes = question.votes || [];
+        const reviews = question.questionReviews || [];
+        const counts = question._count || {};
+        
+        const upvotes = votes.filter((v: any) => v.voteType === 'up').length;
+        const downvotes = votes.filter((v: any) => v.voteType === 'down').length;
+        const averageRating = reviews.length > 0
+          ? reviews.reduce((sum: number, r: any) => sum + r.rating, 0) / reviews.length
           : null;
 
         return {
@@ -102,8 +107,8 @@ export const questionRouter = router({
             downvotes,
             score: upvotes - downvotes,
             averageRating,
-            timesStudied: question._count.studyRecords,
-            reviewCount: question._count.questionReviews,
+            timesStudied: counts.studyRecords || 0,
+            reviewCount: counts.questionReviews || 0,
           },
         };
       });

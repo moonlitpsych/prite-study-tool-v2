@@ -1,6 +1,6 @@
 // import { TRPCError } from '@trpc/server'; // Unused for now
 import { z } from 'zod';
-import { router, protectedProcedure, schemas } from '../lib/trpc';
+import { router, protectedProcedure } from '../lib/trpc';
 
 // Enhanced SM-2 algorithm implementation
 function calculateNextReview(
