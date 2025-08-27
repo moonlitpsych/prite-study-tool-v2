@@ -95,7 +95,7 @@ export const uploadRouter = router({
       try {
         const explanation = await generateExplanation({
           question: input.questionText,
-          options: input.options,
+          options: input.options as { label: string; text: string; }[],
           correctAnswers: input.correctAnswers,
           existingExplanation: input.existingExplanation,
           style: input.style,

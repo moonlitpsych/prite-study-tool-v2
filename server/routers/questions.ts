@@ -170,7 +170,16 @@ export const questionRouter = router({
     .mutation(async ({ input, ctx }) => {
       const question = await ctx.prisma.question.create({
         data: {
-          ...input,
+          text: input.text,
+          options: input.options,
+          correctAnswers: input.correctAnswers,
+          explanation: input.explanation,
+          category: input.category,
+          subcategory: input.subcategory,
+          examPart: input.examPart,
+          difficulty: input.difficulty,
+          topics: input.topics || [],
+          isPublic: input.isPublic,
           createdById: ctx.user.id,
         },
         include: {
@@ -350,7 +359,9 @@ export const questionRouter = router({
         create: {
           userId: ctx.user.id,
           questionId,
-          ...reviewData,
+          rating: reviewData.rating,
+          feedback: reviewData.feedback,
+          reviewType: reviewData.reviewType,
         },
         update: reviewData,
       });
@@ -369,7 +380,9 @@ export const questionRouter = router({
       const report = await ctx.prisma.questionReport.create({
         data: {
           userId: ctx.user.id,
-          ...input,
+          questionId: input.questionId,
+          reason: input.reason,
+          description: input.description,
         },
       });
 

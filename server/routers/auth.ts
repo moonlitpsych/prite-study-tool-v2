@@ -47,7 +47,10 @@ export const authRouter = router({
         data: {
           email,
           username,
-          ...userData,
+          name: userData.name || username, // Use username as fallback
+          pgyLevel: userData.pgyLevel,
+          institution: userData.institution,
+          specialty: userData.specialty,
           // Note: password would be stored in a separate auth table in production
         },
         select: {

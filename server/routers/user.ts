@@ -19,8 +19,17 @@ export const userRouter = router({
     .mutation(async ({ input, ctx }) => {
       const score = await ctx.prisma.priteScore.create({
         data: {
-          ...input,
           userId: ctx.user.id,
+          examDate: input.examDate,
+          totalScore: input.totalScore,
+          percentile: input.percentile,
+          adultPsychiatry: input.adultPsychiatry,
+          childPsychiatry: input.childPsychiatry,
+          neurology: input.neurology,
+          psychology: input.psychology,
+          substance: input.substance,
+          emergency: input.emergency,
+          consultation: input.consultation,
         },
       });
 
