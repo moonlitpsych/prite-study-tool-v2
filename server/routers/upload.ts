@@ -1,14 +1,7 @@
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { router, protectedProcedure } from '../lib/trpc';
-import { processQuestionImage, processQuestionText, generateExplanation } from '../lib/ai-processing';
-
-const uploadMethods = {
-  'camera': 'Camera/Photo Upload',
-  'text': 'Text Paste (iOS Live Text)',
-  'file': 'File Upload (PDF/Image)',
-  'bulk': 'Bulk Text Processing'
-} as const;
+import { processQuestionImage, processQuestionText, generateExplanation, type ParsedQuestion, type ProcessingResult } from '../lib/ai-processing';
 
 export const uploadRouter = router({
   // Process image with AI (camera/file upload)
@@ -43,7 +36,7 @@ export const uploadRouter = router({
       } catch (error) {
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
-          message: `Failed to process image: ${error.message}`,
+          message: `Failed to process image: ${error instanceof Error ? error.message : 'Unknown error'}`,
         });
       }
     }),
@@ -81,7 +74,7 @@ export const uploadRouter = router({
       } catch (error) {
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
-          message: `Failed to process text: ${error.message}`,
+          message: `Failed to process text: ${error instanceof Error ? error.message : 'Unknown error'}`,
         });
       }
     }),
@@ -113,7 +106,7 @@ export const uploadRouter = router({
       } catch (error) {
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
-          message: `Failed to generate explanation: ${error.message}`,
+          message: `Failed to generate explanation: ${error instanceof Error ? error.message : 'Unknown error'}`,
         });
       }
     }),
@@ -177,14 +170,14 @@ export const uploadRouter = router({
                 });
                 question.explanation = explanation;
               } catch (explainError) {
-                console.warn(`Failed to generate explanation for question: ${explainError.message}`);
+                console.warn(`Failed to generate explanation for question: ${explainError instanceof Error ? explainError.message : 'Unknown error'}`);
               }
             }
           }
         } catch (error) {
           results.push({
             success: false,
-            error: error.message,
+            error: error instanceof Error ? error.message : 'Unknown error',
             metadata: upload.metadata,
           });
         }
@@ -209,7 +202,7 @@ export const uploadRouter = router({
 
   // Get processing history for user
   getProcessingHistory: protectedProcedure
-    .input(z.object({
+    .input(() => z.object({
       limit: z.number().min(1).max(50).default(10),
       offset: z.number().min(0).default(0),
     }))

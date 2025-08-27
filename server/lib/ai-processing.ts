@@ -1,12 +1,12 @@
 // server/lib/ai-processing.ts
 // Modern AI processing with Claude API for PRITE question extraction and explanation generation
 
-interface QuestionOption {
+export interface QuestionOption {
   label: string;
   text: string;
 }
 
-interface ParsedQuestion {
+export interface ParsedQuestion {
   number: string;
   text: string;
   options: QuestionOption[];
@@ -16,14 +16,14 @@ interface ParsedQuestion {
   difficulty?: 'easy' | 'medium' | 'hard';
 }
 
-interface ProcessingOptions {
+export interface ProcessingOptions {
   examType?: 'PRITE Part 1' | 'PRITE Part 2';
   expectedQuestions?: number;
   includeAnswerKey?: boolean;
   strictMode?: boolean;
 }
 
-interface ProcessingResult {
+export interface ProcessingResult {
   questions: ParsedQuestion[];
   metadata: {
     totalFound: number;
