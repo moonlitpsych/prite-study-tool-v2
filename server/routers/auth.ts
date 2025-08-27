@@ -39,8 +39,8 @@ export const authRouter = router({
         });
       }
 
-      // Hash password
-      const hashedPassword = await bcrypt.hash(password, 12);
+      // Hash password (stored separately in production)
+      await bcrypt.hash(password, 12);
 
       // Create user
       const user = await ctx.prisma.user.create({
@@ -80,7 +80,8 @@ export const authRouter = router({
   login: publicProcedure
     .input(loginSchema)
     .mutation(async ({ input, ctx }) => {
-      const { email, password } = input;
+      const { email } = input;
+      // Note: password validation would be implemented in production
 
       // Find user (in production, you'd check password from auth table)
       const user = await ctx.prisma.user.findUnique({

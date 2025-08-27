@@ -72,7 +72,7 @@ class ClaudeClient {
       throw new Error(`Claude API error: ${response.status}`);
     }
 
-    const data = await response.json();
+    const data = await response.json() as any;
     return data.content[0].text;
   }
 
@@ -116,7 +116,7 @@ class ClaudeClient {
       throw new Error(`Claude Vision API error: ${response.status}`);
     }
 
-    const data = await response.json();
+    const data = await response.json() as any;
     return data.content[0].text;
   }
 
@@ -231,7 +231,7 @@ Important:
       },
     };
   } catch (error) {
-    throw new Error(`Failed to process image: ${error.message}`);
+    throw new Error(`Failed to process image: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 
@@ -301,7 +301,7 @@ Guidelines:
       },
     };
   } catch (error) {
-    throw new Error(`Failed to process text: ${error.message}`);
+    throw new Error(`Failed to process text: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 
@@ -360,7 +360,7 @@ Focus on:
     const explanation = await claude.processText(prompt, '');
     return explanation;
   } catch (error) {
-    throw new Error(`Failed to generate explanation: ${error.message}`);
+    throw new Error(`Failed to generate explanation: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 

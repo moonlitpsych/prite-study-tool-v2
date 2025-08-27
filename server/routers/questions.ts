@@ -25,7 +25,8 @@ const questionFilterSchema = z.object({
   isPublic: z.boolean().optional(),
   createdBy: z.string().optional(),
   search: z.string().optional(),
-  ...schemas.pagination,
+  limit: z.number().min(1).max(100).default(20),
+  offset: z.number().min(0).default(0),
 });
 
 export const questionRouter = router({
@@ -193,8 +194,19 @@ export const questionRouter = router({
   // Update question (only by creator)
   update: protectedProcedure
     .input(z.object({
-      id: schemas.id,
-      ...questionSchema.partial(),
+      id: z.string().cuid(),
+      text: z.string().optional(),
+      options: z.array(z.object({
+        label: z.string(),
+        text: z.string(),
+      })).optional(),
+      correctAnswers: z.array(z.string()).optional(),
+      explanation: z.string().optional(),
+      category: z.string().optional(),
+      difficulty: z.enum(['easy', 'medium', 'hard']).optional(),
+      examPart: z.enum(['Part 1', 'Part 2']).optional(),
+      topics: z.array(z.string()).optional(),
+      isPublic: z.boolean().optional(),
     }))
     .mutation(async ({ input, ctx }) => {
       const { id, ...updateData } = input;

@@ -22,14 +22,14 @@ app.use('/api/trpc', createExpressMiddleware({
 }));
 
 // Health check
-app.get('/health', (req, res) => {
+app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
 // Serve static files in production
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static('../dist'));
-  app.get('*', (req, res) => {
+  app.get('*', (_req, res) => {
     res.sendFile('index.html', { root: '../dist' });
   });
 }

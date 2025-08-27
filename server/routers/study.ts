@@ -1,4 +1,4 @@
-import { TRPCError } from '@trpc/server';
+// import { TRPCError } from '@trpc/server'; // Unused for now
 import { z } from 'zod';
 import { router, protectedProcedure, schemas } from '../lib/trpc';
 
@@ -161,7 +161,8 @@ export const studyRouter = router({
       selectedAnswers: z.array(z.string()),
     }))
     .mutation(async ({ input, ctx }) => {
-      const { sessionId, questionId, wasCorrect, confidence, timeSpent, selectedAnswers } = input;
+      const { sessionId, questionId, wasCorrect, confidence, timeSpent } = input;
+      // Note: selectedAnswers would be stored for detailed analytics
 
       // Get existing study record or create new one
       const existingRecord = await ctx.prisma.studyRecord.findUnique({
@@ -435,7 +436,8 @@ export const studyRouter = router({
   // Get study history
   getHistory: protectedProcedure
     .input(z.object({
-      ...schemas.pagination,
+      limit: z.number().min(1).max(100).default(20),
+      offset: z.number().min(0).default(0),
       category: z.string().optional(),
     }))
     .query(async ({ input, ctx }) => {

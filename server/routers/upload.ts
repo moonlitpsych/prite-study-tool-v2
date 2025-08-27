@@ -1,7 +1,7 @@
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { router, protectedProcedure } from '../lib/trpc';
-import { processQuestionImage, processQuestionText, generateExplanation, type ParsedQuestion, type ProcessingResult } from '../lib/ai-processing';
+import { processQuestionImage, processQuestionText, generateExplanation } from '../lib/ai-processing';
 
 export const uploadRouter = router({
   // Process image with AI (camera/file upload)
@@ -202,7 +202,7 @@ export const uploadRouter = router({
 
   // Get processing history for user
   getProcessingHistory: protectedProcedure
-    .input(() => z.object({
+    .input(z.object({
       limit: z.number().min(1).max(50).default(10),
       offset: z.number().min(0).default(0),
     }))
