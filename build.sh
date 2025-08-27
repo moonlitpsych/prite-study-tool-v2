@@ -10,8 +10,9 @@ npm install
 # Generate Prisma client
 npm run db:generate
 
-# Build the application
-npm run build
+# Build client and server separately (avoid circular dependency)
+npm run build:client
+npm run build:server
 
 # Push database schema (only if DATABASE_URL is set)
 if [ -n "$DATABASE_URL" ]; then
