@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import path from 'path';
 import { createExpressMiddleware } from '@trpc/server/adapters/express';
 import { appRouter } from './routers/app.js';
 import { createContext } from './lib/context.js';
@@ -28,9 +29,10 @@ app.get('/health', (_req, res) => {
 
 // Serve static files in production
 if (process.env.NODE_ENV === 'production') {
-  app.use(express.static('../dist'));
+  const staticPath = path.resolve(process.cwd(), 'dist');
+  app.use(express.static(staticPath));
   app.get('*', (_req, res) => {
-    res.sendFile('index.html', { root: '../dist' });
+    res.sendFile(path.join(staticPath, 'index.html'));
   });
 }
 
