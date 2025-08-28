@@ -39,6 +39,4 @@ if (process.env.NODE_ENV === 'production') {
 app.listen(PORT, () => {
   console.log(`🚀 PRITE Study Tool v2 server running on port ${PORT}`);
   console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`🔑 JWT_SECRET: ${process.env.JWT_SECRET ? 'SET' : 'NOT SET'}`);
-  console.log(`🗄️ DATABASE_URL: ${process.env.DATABASE_URL ? 'SET' : 'NOT SET'}`);
 });

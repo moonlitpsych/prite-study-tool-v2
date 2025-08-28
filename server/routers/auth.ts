@@ -23,11 +23,9 @@ export const authRouter = router({
   register: publicProcedure
     .input(registerSchema)
     .mutation(async ({ input, ctx }) => {
-      console.log('🔄 Register mutation started:', { email: input.email, username: input.username });
       const { email, username, password, ...userData } = input;
 
       // Check if user exists
-      console.log('🔍 Checking for existing user...');
       const existingUser = await ctx.prisma.user.findFirst({
         where: {
           OR: [{ email }, { username }],
@@ -35,21 +33,16 @@ export const authRouter = router({
       });
 
       if (existingUser) {
-        console.log('❌ User already exists:', existingUser.email);
         throw new TRPCError({
           code: 'CONFLICT',
           message: 'User with this email or username already exists',
         });
       }
 
-      console.log('✅ User does not exist, proceeding with registration...');
-
       // Hash password
-      console.log('🔐 Hashing password...');
       const hashedPassword = await bcrypt.hash(password, 12);
 
       // Create user
-      console.log('👤 Creating user in database...');
       const user = await ctx.prisma.user.create({
         data: {
           email,
@@ -75,14 +68,12 @@ export const authRouter = router({
       });
 
       // Generate JWT
-      console.log('🔑 Generating JWT token...');
       const token = jwt.sign(
         { userId: user.id },
         process.env.JWT_SECRET!,
         { expiresIn: '30d' }
       );
 
-      console.log('✅ Registration successful for:', user.email);
       return {
         user,
         token,
