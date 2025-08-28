@@ -39,8 +39,8 @@ export const authRouter = router({
         });
       }
 
-      // Hash password (stored separately in production)
-      await bcrypt.hash(password, 12);
+      // Hash password
+      const hashedPassword = await bcrypt.hash(password, 12);
 
       // Create user
       const user = await ctx.prisma.user.create({
@@ -48,10 +48,10 @@ export const authRouter = router({
           email,
           username,
           name: userData.name || username, // Use username as fallback
+          hashedPassword,
           pgyLevel: userData.pgyLevel,
           institution: userData.institution,
           specialty: userData.specialty,
-          // Note: password would be stored in a separate auth table in production
         },
         select: {
           id: true,
@@ -83,10 +83,9 @@ export const authRouter = router({
   login: publicProcedure
     .input(loginSchema)
     .mutation(async ({ input, ctx }) => {
-      const { email } = input;
-      // Note: password validation would be implemented in production
+      const { email, password } = input;
 
-      // Find user (in production, you'd check password from auth table)
+      // Find user with password for verification
       const user = await ctx.prisma.user.findUnique({
         where: { email },
         select: {
@@ -94,6 +93,7 @@ export const authRouter = router({
           email: true,
           username: true,
           name: true,
+          hashedPassword: true,
           pgyLevel: true,
           institution: true,
           specialty: true,
@@ -110,8 +110,15 @@ export const authRouter = router({
         });
       }
 
-      // In production, verify password against hashed version
-      // const isValidPassword = await bcrypt.compare(password, user.hashedPassword);
+      // Verify password against hashed version
+      const isValidPassword = await bcrypt.compare(password, user.hashedPassword);
+      
+      if (!isValidPassword) {
+        throw new TRPCError({
+          code: 'UNAUTHORIZED',
+          message: 'Invalid credentials',
+        });
+      }
 
       // Generate JWT
       const token = jwt.sign(
@@ -120,8 +127,10 @@ export const authRouter = router({
         { expiresIn: '30d' }
       );
 
+      // Return user without password
+      const { hashedPassword, ...userWithoutPassword } = user;
       return {
-        user,
+        user: userWithoutPassword,
         token,
       };
     }),
