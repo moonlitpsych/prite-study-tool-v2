@@ -11,6 +11,7 @@ import { StudyPage } from './pages/StudyPage';
 import { QuestionsPage } from './pages/QuestionsPage';
 import { CommunityPage } from './pages/CommunityPage';
 import { ProfilePage } from './pages/ProfilePage';
+import { UploadPage } from './pages/UploadPage';
 
 // Components
 import { Layout } from './components/Layout';
@@ -68,6 +69,7 @@ function App() {
         <Route path="/" element={<DashboardPage />} />
         <Route path="/study" element={<StudyPage />} />
         <Route path="/questions" element={<QuestionsPage />} />
+        <Route path="/upload" element={<UploadPage />} />
         <Route path="/community" element={<CommunityPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="*" element={<Navigate to="/" replace />} />

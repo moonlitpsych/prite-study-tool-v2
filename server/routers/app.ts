@@ -5,6 +5,7 @@ import { studyRouter } from './study.js';
 import { communityRouter } from './community.js';
 import { userRouter } from './user.js';
 import { uploadRouter } from './upload.js';
+import { aiRouter } from './ai.js';
 
 export const appRouter = router({
   auth: authRouter,
@@ -13,6 +14,7 @@ export const appRouter = router({
   community: communityRouter,
   user: userRouter,
   upload: uploadRouter,
+  ai: aiRouter,
 });
 
 export type AppRouter = typeof appRouter;

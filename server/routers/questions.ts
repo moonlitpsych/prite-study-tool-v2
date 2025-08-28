@@ -164,6 +164,60 @@ export const questionRouter = router({
       return question;
     }),
 
+  // Create AI-processed question from upload
+  createFromUpload: protectedProcedure
+    .input(z.object({
+      text: z.string().min(10).max(2000),
+      options: z.array(z.object({
+        label: z.string().min(1),
+        text: z.string().min(1).max(500),
+      })).min(2).max(8),
+      correctAnswer: z.string().min(1),
+      category: z.string().min(1),
+      topics: z.array(z.string()).default([]),
+      examYear: z.number().min(2015).max(2030),
+      examPart: z.number().min(1).max(2),
+      questionNumber: z.number().optional(),
+      confidence: z.number().optional(),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      const question = await ctx.prisma.question.create({
+        data: {
+          text: input.text,
+          options: input.options,
+          correctAnswers: [input.correctAnswer], // Convert single answer to array
+          category: input.category,
+          examPart: input.examPart === 1 ? 'Part 1' : 'Part 2',
+          topics: input.topics || [],
+          examYear: input.examYear,
+          questionNumber: input.questionNumber,
+          uploadMethod: 'ai-processed',
+          isPublic: false, // Default to private for uploaded questions
+          createdById: ctx.user.id,
+        },
+        include: {
+          createdBy: {
+            select: {
+              username: true,
+              name: true,
+            },
+          },
+        },
+      });
+
+      // Award contribution points
+      await ctx.prisma.user.update({
+        where: { id: ctx.user.id },
+        data: {
+          contributionScore: {
+            increment: 3, // Points for AI-processed uploads
+          },
+        },
+      });
+
+      return question;
+    }),
+
   // Create new question
   create: protectedProcedure
     .input(questionSchema)

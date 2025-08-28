@@ -52,22 +52,37 @@ model Question {
   updatedAt DateTime @updatedAt
 
   // Question content
-  options      Json // Array of {label: "A", text: "Option text"}
+  options        Json     // Array of {label: "A", text: "Option text"}
   correctAnswers String[] // ["A", "B"] for multiple correct
   explanation    String?
   
-  // Categorization
-  category    String // "Adult Psychiatry", "Child", "Neurology", etc.
+  // Enhanced Categorization
+  category    String // "Adult Psychiatry", "Child Psychiatry", "Neurology", etc.
   subcategory String?
   examPart    String // "Part 1", "Part 2"
   difficulty  String @default("medium") // easy, medium, hard
-  topics      String[] // ["Depression", "Medication", "DSM-5"]
+  topics      String[] // ["Depression", "Medication", "DSM-5", "Pharmacology"]
+  
+  // PRITE-specific metadata
+  examYear       Int?
+  questionNumber Int?
+  bookletPage    Int?
+  
+  // Performance tracking
+  timesAnswered      Int     @default(0)
+  correctAnswerCount Int     @default(0)
+  averageScore      Float?
+  weaknessIndicator Boolean @default(false) // Flagged as commonly missed
   
   // Community features
   isPublic      Boolean @default(false)
   isVerified    Boolean @default(false) // Reviewed and approved
   timesStudied  Int     @default(0)
   averageRating Float?
+  
+  // Upload metadata
+  uploadMethod String? // "ocr", "manual", "ai-processed"
+  rawOcrText   String? // Store original OCR output for reference
   
   // Relationships
   createdBy       User             @relation(fields: [createdById], references: [id])

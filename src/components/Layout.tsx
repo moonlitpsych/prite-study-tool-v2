@@ -5,7 +5,8 @@ import {
   Home, 
   BookOpen, 
   Users, 
-  MessageSquare, 
+  MessageSquare,
+  Upload,
   User, 
   LogOut,
   Trophy,
@@ -24,6 +25,7 @@ export const Layout = ({ children }: LayoutProps) => {
     { name: 'Dashboard', href: '/', icon: Home },
     { name: 'Study', href: '/study', icon: BookOpen },
     { name: 'Questions', href: '/questions', icon: MessageSquare },
+    { name: 'Upload', href: '/upload', icon: Upload },
     { name: 'Community', href: '/community', icon: Users },
   ];
 
