@@ -11,7 +11,7 @@ const PORT = process.env.PORT || 3000;
 // CORS configuration
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? ['https://prite-study-tool.railway.app'] 
+    ? true // Allow all origins in production for now - can be restricted later
     : ['http://localhost:5173'],
   credentials: true,
 }));
@@ -39,4 +39,6 @@ if (process.env.NODE_ENV === 'production') {
 app.listen(PORT, () => {
   console.log(`🚀 PRITE Study Tool v2 server running on port ${PORT}`);
   console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`🔑 JWT_SECRET: ${process.env.JWT_SECRET ? 'SET' : 'NOT SET'}`);
+  console.log(`🗄️ DATABASE_URL: ${process.env.DATABASE_URL ? 'SET' : 'NOT SET'}`);
 });
