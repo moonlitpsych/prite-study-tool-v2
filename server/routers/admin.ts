@@ -25,13 +25,19 @@ export const adminRouter = router({
       console.log(`🔒 Generated hash length: ${hashedPassword.length}`);
       console.log(`🔍 Hash starts with: ${hashedPassword.substring(0, 20)}...`);
       
-      // Update the test user with fresh hash
-      const updatedUser = await prisma.user.upsert({
-        where: { email: 'test@example.com' },
-        update: {
-          hashedPassword, // Update with fresh hash
-        },
-        create: {
+      // First, try to delete any existing test user to avoid conflicts
+      try {
+        await prisma.user.delete({
+          where: { email: 'test@example.com' },
+        });
+        console.log('🗑️ Admin: Deleted existing test user');
+      } catch (error) {
+        console.log('ℹ️ Admin: No existing test user found to delete');
+      }
+
+      // Force create fresh test user
+      const updatedUser = await prisma.user.create({
+        data: {
           email: 'test@example.com',
           username: 'testuser',
           name: 'Test User',

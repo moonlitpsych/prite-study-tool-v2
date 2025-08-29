@@ -8,14 +8,20 @@ async function resetTestUser() {
   
   // Create fresh password hash
   const hashedPassword = await bcrypt.hash('password123', 12);
+  console.log(`🔒 Generated hash length: ${hashedPassword.length}`);
   
-  // Update the test user with fresh hash
-  const updatedUser = await prisma.user.upsert({
-    where: { email: 'test@example.com' },
-    update: {
-      hashedPassword, // Update with fresh hash
-    },
-    create: {
+  // Force delete and recreate test user
+  try {
+    await prisma.user.delete({
+      where: { email: 'test@example.com' },
+    });
+    console.log('🗑️ Deleted existing test user');
+  } catch (error) {
+    console.log('ℹ️ No existing test user to delete');
+  }
+
+  const updatedUser = await prisma.user.create({
+    data: {
       email: 'test@example.com',
       username: 'testuser',
       name: 'Test User',

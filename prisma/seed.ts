@@ -4,13 +4,24 @@ import bcrypt from 'bcryptjs';
 const prisma = new PrismaClient();
 
 async function main() {
+  console.log('🌱 Starting database seed...');
+  
   // Create a test user
   const hashedPassword = await bcrypt.hash('password123', 12);
+  console.log(`🔒 Generated password hash length: ${hashedPassword.length}`);
   
-  const testUser = await prisma.user.upsert({
-    where: { email: 'test@example.com' },
-    update: {},
-    create: {
+  // Force create test user by deleting first if exists
+  try {
+    await prisma.user.delete({
+      where: { email: 'test@example.com' },
+    });
+    console.log('🗑️ Deleted existing test user');
+  } catch (error) {
+    console.log('ℹ️ No existing test user to delete');
+  }
+
+  const testUser = await prisma.user.create({
+    data: {
       email: 'test@example.com',
       username: 'testuser',
       name: 'Test User',
@@ -21,6 +32,8 @@ async function main() {
       specialty: 'Adult Psychiatry',
     },
   });
+
+  console.log(`✅ Test user created: ${testUser.email} (ID: ${testUser.id})`);
 
   // Create some sample questions
   const questions = [
