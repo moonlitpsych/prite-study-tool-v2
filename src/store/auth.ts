@@ -6,14 +6,15 @@ export interface User {
   email: string;
   username: string;
   name: string;
-  bio?: string;
-  pgyLevel?: number;
-  targetScore?: number;
-  institution?: string;
-  specialty?: string;
+  bio?: string | null;
+  pgyLevel?: number | null;
+  targetScore?: number | null;
+  institution?: string | null;
+  specialty?: string | null;
   isPublic: boolean;
   contributionScore: number;
   reputation: number;
+  avatar?: string | null;
 }
 
 interface AuthState {

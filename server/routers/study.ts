@@ -81,7 +81,10 @@ export const studyRouter = router({
 
       // Build query for questions
       let questionWhere: any = {
-        isPublic: true,
+        OR: [
+          { isPublic: true }, // Public community questions
+          { createdById: ctx.user.id }, // User's own questions (public or private)
+        ],
         ...(categories && categories.length > 0 && { category: { in: categories } }),
         ...(difficulty && { difficulty }),
       };
@@ -300,7 +303,7 @@ export const studyRouter = router({
       where: {
         OR: [
           {
-            // Never studied
+            // Never studied questions that are either public or user's own
             NOT: {
               studyRecords: {
                 some: {
@@ -308,7 +311,10 @@ export const studyRouter = router({
                 },
               },
             },
-            isPublic: true,
+            OR: [
+              { isPublic: true },
+              { createdById: ctx.user.id },
+            ],
           },
           {
             // Due for review

@@ -179,8 +179,39 @@ export const questionRouter = router({
       examPart: z.number().min(1).max(2),
       questionNumber: z.number().optional(),
       confidence: z.number().optional(),
+      isPublic: z.boolean().default(true),
     }))
     .mutation(async ({ input, ctx }) => {
+      // Check for duplicates based on questionNumber + examPart + examYear
+      if (input.questionNumber && input.examYear) {
+        const examPartString = input.examPart === 1 ? 'Part 1' : 'Part 2';
+        
+        const existingQuestion = await ctx.prisma.question.findFirst({
+          where: {
+            questionNumber: input.questionNumber,
+            examPart: examPartString,
+            examYear: input.examYear,
+          },
+          orderBy: { createdAt: 'asc' }, // Get the oldest one
+        });
+
+        if (existingQuestion) {
+          // Duplicate found - return the existing question instead of creating new one
+          throw new TRPCError({
+            code: 'CONFLICT',
+            message: `This question already exists: PRITE ${input.examYear} ${examPartString} Question ${input.questionNumber}. The existing question takes precedence.`,
+            cause: {
+              existingQuestionId: existingQuestion.id,
+              conflictDetails: {
+                questionNumber: input.questionNumber,
+                examPart: examPartString,
+                examYear: input.examYear,
+              }
+            }
+          });
+        }
+      }
+
       const question = await ctx.prisma.question.create({
         data: {
           text: input.text,
@@ -192,7 +223,7 @@ export const questionRouter = router({
           examYear: input.examYear,
           questionNumber: input.questionNumber,
           uploadMethod: 'ai-processed',
-          isPublic: false, // Default to private for uploaded questions
+          isPublic: input.isPublic,
           createdById: ctx.user.id,
         },
         include: {
@@ -493,6 +524,140 @@ export const questionRouter = router({
           },
         };
       });
+    }),
+
+  // Generate AI explanation for a question
+  generateExplanation: protectedProcedure
+    .input(z.object({
+      questionId: z.string().cuid(),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      // Get the question with full details
+      const question = await ctx.prisma.question.findUnique({
+        where: { id: input.questionId },
+        include: {
+          createdBy: {
+            select: {
+              username: true,
+              name: true,
+            },
+          },
+        },
+      });
+
+      if (!question) {
+        throw new TRPCError({ code: 'NOT_FOUND' });
+      }
+
+      // Check if user can access this question (public or owns it)
+      if (!question.isPublic && question.createdById !== ctx.user.id) {
+        throw new TRPCError({ code: 'FORBIDDEN' });
+      }
+
+      // Build the AI prompt for UWorld-style explanation
+      const options = question.options as { label: string; text: string }[];
+      const correctAnswers = question.correctAnswers;
+      const incorrectOptions = options.filter(opt => !correctAnswers.includes(opt.label));
+
+      const prompt = `You are a psychiatric education expert. Generate a comprehensive UWorld-style explanation for this PRITE question.
+
+QUESTION: ${question.text}
+
+OPTIONS:
+${options.map(opt => `${opt.label}. ${opt.text}`).join('\n')}
+
+CORRECT ANSWER(S): ${correctAnswers.join(', ')}
+
+Please provide:
+
+1. **CORRECT ANSWER EXPLANATION**: Write 2-3 detailed paragraphs explaining why the correct answer(s) is/are correct. Include relevant medical knowledge, clinical reasoning, diagnostic criteria, treatment guidelines, or psychiatric principles. Make it educational and comprehensive like UWorld explanations.
+
+2. **INCORRECT ANSWER EXPLANATIONS**: For each incorrect option, provide 1-2 sentences explaining why it's wrong or less appropriate.
+
+Format your response as JSON:
+{
+  "correctExplanation": "2-3 paragraph detailed explanation here...",
+  "incorrectExplanations": {
+    "A": "Brief explanation if A is incorrect (skip if A is correct)",
+    "B": "Brief explanation if B is incorrect (skip if B is correct)",
+    "C": "Brief explanation if C is incorrect (skip if C is correct)",
+    "D": "Brief explanation if D is incorrect (skip if D is correct)",
+    "E": "Brief explanation if E is incorrect (skip if E is correct)"
+  }
+}
+
+Make the explanations clinically accurate, educational, and appropriate for psychiatry residents preparing for PRITE.`;
+
+      try {
+        // Import the Anthropic client
+        const Anthropic = await import('@anthropic-ai/sdk');
+        const apiKey = process.env.CLAUDE_API_KEY;
+        
+        if (!apiKey) {
+          throw new Error('Claude API key not available');
+        }
+
+        const claude = new Anthropic.default({ apiKey });
+        
+        const response = await claude.messages.create({
+          model: "claude-3-5-sonnet-20241022",
+          max_tokens: 3000,
+          messages: [{
+            role: "user",
+            content: prompt
+          }]
+        });
+
+        const textContent = response.content.find(c => c.type === 'text')?.text || '';
+        const explanationData = JSON.parse(textContent);
+
+        // Update the question with the generated explanation
+        const fullExplanation = `${explanationData.correctExplanation}
+
+**Why other options are incorrect:**
+${Object.entries(explanationData.incorrectExplanations)
+  .map(([option, explanation]) => `${option}. ${explanation}`)
+  .join('\n')}`;
+
+        const updatedQuestion = await ctx.prisma.question.update({
+          where: { id: input.questionId },
+          data: {
+            explanation: fullExplanation,
+          },
+        });
+
+        return {
+          explanation: fullExplanation,
+          correctExplanation: explanationData.correctExplanation,
+          incorrectExplanations: explanationData.incorrectExplanations,
+        };
+
+      } catch (error) {
+        console.error('AI explanation generation failed:', error);
+        
+        // Fallback explanation
+        const fallbackExplanation = `The correct answer is ${correctAnswers.join(' and ')}.
+
+This explanation was generated automatically. For the most accurate information, please consult medical literature and clinical guidelines.
+
+**Why other options are incorrect:**
+${incorrectOptions.map(opt => `${opt.label}. This option is not the best choice for this clinical scenario.`).join('\n')}`;
+
+        const updatedQuestion = await ctx.prisma.question.update({
+          where: { id: input.questionId },
+          data: {
+            explanation: fallbackExplanation,
+          },
+        });
+
+        return {
+          explanation: fallbackExplanation,
+          correctExplanation: `The correct answer is ${correctAnswers.join(' and ')}. This explanation was generated automatically.`,
+          incorrectExplanations: Object.fromEntries(
+            incorrectOptions.map(opt => [opt.label, 'This option is not the best choice for this clinical scenario.'])
+          ),
+        };
+      }
     }),
 
   // Get my questions

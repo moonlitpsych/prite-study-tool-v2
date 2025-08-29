@@ -7,6 +7,10 @@ const processImageSchema = z.object({
   prompt: z.string(),
 });
 
+const processTextSchema = z.object({
+  text: z.string(),
+});
+
 // Initialize Claude API client
 const initializeClaudeClient = () => {
   const apiKey = process.env.CLAUDE_API_KEY;
@@ -135,6 +139,53 @@ export const aiRouter = router({
         await new Promise(resolve => setTimeout(resolve, 2000));
         
         return mockResponse;
+      }
+    }),
+
+  processText: protectedProcedure
+    .input(processTextSchema)
+    .mutation(async ({ input }) => {
+      console.log('AI text processing requested');
+      
+      try {
+        // Try to use Claude API if available
+        const claude = initializeClaudeClient();
+        
+        const response = await claude.messages.create({
+          model: "claude-3-5-sonnet-20241022",
+          max_tokens: 4000,
+          messages: [{
+            role: "user",
+            content: input.text
+          }]
+        });
+
+        const textContent = response.content.find(c => c.type === 'text')?.text || '';
+        
+        console.log('Claude processed text successfully');
+        
+        return {
+          response: textContent
+        };
+        
+      } catch (error) {
+        console.warn('Claude API failed, falling back to mock response:', error);
+        
+        // Fallback mock explanation
+        const mockExplanation = `{
+  "correctExplanation": "This is a mock explanation generated when the Claude API is unavailable. The correct answer is based on standard psychiatric practice and diagnostic criteria. In clinical practice, this type of question tests your understanding of core psychiatric principles and evidence-based treatment approaches. For the most accurate and detailed explanations, the full Claude AI would provide comprehensive medical reasoning including relevant DSM-5 criteria, treatment guidelines, and clinical decision-making processes.",
+  "incorrectExplanations": {
+    "A": "This option may seem plausible but is not the best choice based on current evidence and guidelines.",
+    "B": "While this option has some merit, it does not represent the most appropriate first-line approach.",
+    "C": "This choice, though reasonable in some contexts, is not the optimal selection for this specific scenario.",
+    "D": "This option does not align with current best practices for this clinical situation.",
+    "E": "This alternative is not supported by current evidence-based recommendations."
+  }
+}`;
+        
+        return {
+          response: mockExplanation
+        };
       }
     }),
 });

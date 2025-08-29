@@ -16,6 +16,7 @@ interface ProcessedQuestion {
   correctAnswer?: string;
   confidence?: number;
   saved?: boolean;
+  isPublic?: boolean;
 }
 
 export const UploadPage = () => {
@@ -122,7 +123,8 @@ Be very careful to extract complete text and maintain formatting. Include ALL qu
           for (const question of aiResult.questions) {
             results.push({
               ...question,
-              confidence: aiResult.confidence
+              confidence: aiResult.confidence,
+              isPublic: true // Default to public sharing
             });
           }
         } catch (error) {
@@ -139,7 +141,8 @@ Be very careful to extract complete text and maintain formatting. Include ALL qu
               { label: 'E', text: 'Please enter option E' }
             ],
             category: 'Unknown',
-            confidence: 0
+            confidence: 0,
+            isPublic: true // Default to public sharing
           });
         }
       }
@@ -174,7 +177,8 @@ Be very careful to extract complete text and maintain formatting. Include ALL qu
         examYear: updatedQuestion.examYear,
         examPart: updatedQuestion.examPart,
         questionNumber: updatedQuestion.number,
-        confidence: updatedQuestion.confidence
+        confidence: updatedQuestion.confidence,
+        isPublic: updatedQuestion.isPublic ?? true
       });
       
       console.log('Question saved successfully:', savedQuestion.id);
@@ -187,9 +191,15 @@ Be very careful to extract complete text and maintain formatting. Include ALL qu
             : q
         )
       );
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to save question:', error);
-      setError('Failed to save question. Please try again.');
+      
+      // Check for duplicate detection error
+      if (error?.data?.code === 'CONFLICT') {
+        setError(`⚠️ Duplicate Detected: ${error.message}`);
+      } else {
+        setError('Failed to save question. Please try again.');
+      }
     }
   };
 
