@@ -10,17 +10,41 @@ async function main() {
   const hashedPassword = await bcrypt.hash('password123', 12);
   console.log(`🔒 Generated password hash length: ${hashedPassword.length}`);
   
-  // Force cleanup ALL test users by deleting any users with test patterns
+  // Force cleanup ALL test users by deleting questions first, then users
   try {
-    const deletedByEmail = await prisma.user.deleteMany({
+    // First delete questions created by test users
+    const testUsers = await prisma.user.findMany({
       where: { 
         OR: [
           { email: 'test@example.com' },
           { username: { startsWith: 'testuser' } }
         ]
       },
+      select: { id: true }
     });
-    console.log(`🗑️ Deleted ${deletedByEmail.count} existing test users`);
+    
+    if (testUsers.length > 0) {
+      const testUserIds = testUsers.map(u => u.id);
+      
+      // Delete questions first
+      const deletedQuestions = await prisma.question.deleteMany({
+        where: { createdById: { in: testUserIds } }
+      });
+      console.log(`🗑️ Deleted ${deletedQuestions.count} questions from test users`);
+      
+      // Then delete users
+      const deletedUsers = await prisma.user.deleteMany({
+        where: { 
+          OR: [
+            { email: 'test@example.com' },
+            { username: { startsWith: 'testuser' } }
+          ]
+        },
+      });
+      console.log(`🗑️ Deleted ${deletedUsers.count} existing test users`);
+    } else {
+      console.log('ℹ️ No existing test users to clean up');
+    }
   } catch (error) {
     console.log('ℹ️ Error during test user cleanup:', error);
   }

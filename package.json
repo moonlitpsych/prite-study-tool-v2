@@ -10,7 +10,7 @@
     "build": "./build.sh",
     "build:client": "vite build",
     "build:server": "tsc --project server/tsconfig.json",
-    "start": "npm run db:seed && npm run reset-test-user && node dist/server/index.js",
+    "start": "npm run db:seed && node dist/server/index.js",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
