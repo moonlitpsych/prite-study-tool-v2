@@ -10,14 +10,23 @@ async function resetTestUser() {
   const hashedPassword = await bcrypt.hash('password123', 12);
   console.log(`🔒 Generated hash length: ${hashedPassword.length}`);
   
-  // Force delete and recreate test user
+  // Force delete and recreate test user (by email AND username)
   try {
     await prisma.user.delete({
       where: { email: 'test@example.com' },
     });
-    console.log('🗑️ Deleted existing test user');
+    console.log('🗑️ Deleted existing test user by email');
   } catch (error) {
-    console.log('ℹ️ No existing test user to delete');
+    console.log('ℹ️ No existing test user found by email');
+  }
+
+  try {
+    await prisma.user.delete({
+      where: { username: 'testuser' },
+    });
+    console.log('🗑️ Deleted existing test user by username');
+  } catch (error) {
+    console.log('ℹ️ No existing test user found by username');
   }
 
   const updatedUser = await prisma.user.create({

@@ -25,14 +25,23 @@ export const adminRouter = router({
       console.log(`🔒 Generated hash length: ${hashedPassword.length}`);
       console.log(`🔍 Hash starts with: ${hashedPassword.substring(0, 20)}...`);
       
-      // First, try to delete any existing test user to avoid conflicts
+      // First, try to delete any existing test user to avoid conflicts (by email AND username)
       try {
         await prisma.user.delete({
           where: { email: 'test@example.com' },
         });
-        console.log('🗑️ Admin: Deleted existing test user');
+        console.log('🗑️ Admin: Deleted existing test user by email');
       } catch (error) {
-        console.log('ℹ️ Admin: No existing test user found to delete');
+        console.log('ℹ️ Admin: No existing test user found by email');
+      }
+
+      try {
+        await prisma.user.delete({
+          where: { username: 'testuser' },
+        });
+        console.log('🗑️ Admin: Deleted existing test user by username');
+      } catch (error) {
+        console.log('ℹ️ Admin: No existing test user found by username');
       }
 
       // Force create fresh test user
@@ -71,14 +80,23 @@ export const adminRouter = router({
         const hashedPassword = await bcrypt.hash('password123', 12);
         console.log(`🔒 Generated hash length: ${hashedPassword.length}`);
         
-        // Force delete any existing test user
+        // Force delete any existing test user (by email AND username)
         try {
           const deleted = await prisma.user.delete({
             where: { email: 'test@example.com' },
           });
-          console.log(`🗑️ EMERGENCY: Deleted existing test user (ID: ${deleted.id})`);
+          console.log(`🗑️ EMERGENCY: Deleted existing test user by email (ID: ${deleted.id})`);
         } catch (error) {
-          console.log('ℹ️ EMERGENCY: No existing test user found to delete');
+          console.log('ℹ️ EMERGENCY: No existing test user found by email');
+        }
+
+        try {
+          const deleted = await prisma.user.delete({
+            where: { username: 'testuser' },
+          });
+          console.log(`🗑️ EMERGENCY: Deleted existing test user by username (ID: ${deleted.id})`);
+        } catch (error) {
+          console.log('ℹ️ EMERGENCY: No existing test user found by username');
         }
 
         // Force create fresh test user
