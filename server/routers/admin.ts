@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 import { router, publicProcedure } from '../lib/trpc.js';
-import { prisma } from '../lib/db.js';
+import { prisma } from '../lib/prisma.js';
 
 export const adminRouter = router({
   // Emergency endpoint to reset test user credentials
