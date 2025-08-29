@@ -10,54 +10,22 @@ async function main() {
   const hashedPassword = await bcrypt.hash('password123', 12);
   console.log(`🔒 Generated password hash length: ${hashedPassword.length}`);
   
-  // Force cleanup ALL test users by deleting questions first, then users
-  try {
-    // First delete questions created by test users
-    const testUsers = await prisma.user.findMany({
-      where: { 
-        OR: [
-          { email: 'test@example.com' },
-          { username: { startsWith: 'testuser' } }
-        ]
-      },
-      select: { id: true }
-    });
-    
-    if (testUsers.length > 0) {
-      const testUserIds = testUsers.map(u => u.id);
-      
-      // Delete questions first
-      const deletedQuestions = await prisma.question.deleteMany({
-        where: { createdById: { in: testUserIds } }
-      });
-      console.log(`🗑️ Deleted ${deletedQuestions.count} questions from test users`);
-      
-      // Then delete users
-      const deletedUsers = await prisma.user.deleteMany({
-        where: { 
-          OR: [
-            { email: 'test@example.com' },
-            { username: { startsWith: 'testuser' } }
-          ]
-        },
-      });
-      console.log(`🗑️ Deleted ${deletedUsers.count} existing test users`);
-    } else {
-      console.log('ℹ️ No existing test users to clean up');
-    }
-  } catch (error) {
-    console.log('ℹ️ Error during test user cleanup:', error);
-  }
+  // Use upsert to create or update test user (avoids foreign key issues)
+  console.log('🔧 Creating or updating test user...');
 
-  // Generate unique username with timestamp to avoid conflicts
-  const uniqueUsername = `testuser_${Date.now()}`;
-  
-  console.log(`🔧 Creating user with unique username: ${uniqueUsername}`);
-
-  const testUser = await prisma.user.create({
-    data: {
+  const testUser = await prisma.user.upsert({
+    where: { email: 'test@example.com' },
+    update: {
+      hashedPassword, // Update password with fresh hash
+      name: 'Test User',
+      pgyLevel: 2,
+      targetScore: 200,
+      institution: 'Test Hospital',
+      specialty: 'Adult Psychiatry',
+    },
+    create: {
       email: 'test@example.com',
-      username: uniqueUsername,
+      username: `testuser_${Date.now()}`,
       name: 'Test User',
       hashedPassword,
       pgyLevel: 2,
