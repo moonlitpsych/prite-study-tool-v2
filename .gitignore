@@ -88,3 +88,12 @@ prisma/migrations/
 
 # Railway
 .railway/
+
+# IDE History (contains sensitive env files)
+.history/
+
+# Additional sensitive files
+*.key
+*.pem
+.env.*
+!.env.example
