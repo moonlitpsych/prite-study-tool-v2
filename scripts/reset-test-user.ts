@@ -7,7 +7,7 @@ async function resetTestUser() {
   console.log('🔧 Resetting test user credentials...');
   
   // Create fresh password hash
-  const hashedPassword = await bcrypt.hash('password123', 10);
+  const hashedPassword = await bcrypt.hash('password123', 12);
   
   // Update the test user with fresh hash
   const updatedUser = await prisma.user.upsert({

@@ -18,9 +18,12 @@ export const adminRouter = router({
       }
 
       console.log('🔧 Admin: Resetting test user credentials...');
+      console.log(`🔑 Generating fresh hash for password: password123`);
       
       // Create fresh password hash
-      const hashedPassword = await bcrypt.hash('password123', 10);
+      const hashedPassword = await bcrypt.hash('password123', 12);
+      console.log(`🔒 Generated hash length: ${hashedPassword.length}`);
+      console.log(`🔍 Hash starts with: ${hashedPassword.substring(0, 20)}...`);
       
       // Update the test user with fresh hash
       const updatedUser = await prisma.user.upsert({

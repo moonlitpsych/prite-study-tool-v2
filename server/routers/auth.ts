@@ -85,6 +85,8 @@ export const authRouter = router({
     .mutation(async ({ input, ctx }) => {
       const { email, password } = input;
 
+      console.log(`🔐 Login attempt for: ${email}`);
+
       // Find user with password for verification
       const user = await ctx.prisma.user.findUnique({
         where: { email },
@@ -104,21 +106,33 @@ export const authRouter = router({
       });
 
       if (!user) {
+        console.log(`❌ User not found: ${email}`);
         throw new TRPCError({
           code: 'UNAUTHORIZED',
           message: 'Invalid credentials',
         });
       }
 
+      console.log(`👤 User found: ${user.email} (ID: ${user.id})`);
+      console.log(`🔒 Hash length: ${user.hashedPassword.length}`);
+      console.log(`🔑 Password length: ${password.length}`);
+
       // Verify password against hashed version
       const isValidPassword = await bcrypt.compare(password, user.hashedPassword);
       
+      console.log(`🔓 Password validation result: ${isValidPassword}`);
+      
       if (!isValidPassword) {
+        console.log(`❌ Password mismatch for: ${email}`);
+        console.log(`🔍 Hash starts with: ${user.hashedPassword.substring(0, 20)}...`);
+        
         throw new TRPCError({
           code: 'UNAUTHORIZED',
           message: 'Invalid credentials',
         });
       }
+
+      console.log(`✅ Login successful for: ${email}`);
 
       // Generate JWT
       const token = jwt.sign(
