@@ -19,7 +19,14 @@ const queryClient = new QueryClient({
 const trpcClient = trpc.createClient({
   links: [
     httpBatchLink({
-      url: `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/trpc`,
+      url: (() => {
+        // In development, use the dev server
+        if (import.meta.env.DEV) {
+          return 'http://localhost:3000/api/trpc';
+        }
+        // In production, use the same origin (Render serves both frontend and backend)
+        return `${window.location.origin}/api/trpc`;
+      })(),
       headers() {
         const token = localStorage.getItem('token');
         return token ? { authorization: `Bearer ${token}` } : {};
