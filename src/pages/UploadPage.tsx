@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
-import { Camera, Upload, FileImage, Loader2, AlertCircle, Calendar, Hash, Save, Trash2, FileText } from 'lucide-react';
+import { Camera, Upload, FileImage, Loader2, AlertCircle, Calendar, Hash, Save, Trash2, FileText, Edit3 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
