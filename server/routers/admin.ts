@@ -44,11 +44,15 @@ export const adminRouter = router({
         console.log('ℹ️ Admin: No existing test user found by username');
       }
 
+      // Generate unique username to avoid conflicts
+      const uniqueUsername = `testuser_reset_${Date.now()}`;
+      console.log(`🔧 Admin: Creating user with unique username: ${uniqueUsername}`);
+
       // Force create fresh test user
       const updatedUser = await prisma.user.create({
         data: {
           email: 'test@example.com',
-          username: 'testuser',
+          username: uniqueUsername,
           name: 'Test User',
           hashedPassword,
           pgyLevel: 2,
@@ -99,11 +103,15 @@ export const adminRouter = router({
           console.log('ℹ️ EMERGENCY: No existing test user found by username');
         }
 
+        // Generate unique username to avoid conflicts
+        const uniqueUsername = `testuser_emergency_${Date.now()}`;
+        console.log(`🔧 EMERGENCY: Creating user with unique username: ${uniqueUsername}`);
+
         // Force create fresh test user
         const newUser = await prisma.user.create({
           data: {
             email: 'test@example.com',
-            username: 'testuser',
+            username: uniqueUsername,
             name: 'Test User',
             hashedPassword,
             pgyLevel: 2,

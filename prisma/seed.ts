@@ -10,29 +10,30 @@ async function main() {
   const hashedPassword = await bcrypt.hash('password123', 12);
   console.log(`🔒 Generated password hash length: ${hashedPassword.length}`);
   
-  // Force create test user by deleting first if exists (by email AND username)
+  // Force cleanup ALL test users by deleting any users with test patterns
   try {
-    await prisma.user.delete({
-      where: { email: 'test@example.com' },
+    const deletedByEmail = await prisma.user.deleteMany({
+      where: { 
+        OR: [
+          { email: 'test@example.com' },
+          { username: { startsWith: 'testuser' } }
+        ]
+      },
     });
-    console.log('🗑️ Deleted existing test user by email');
+    console.log(`🗑️ Deleted ${deletedByEmail.count} existing test users`);
   } catch (error) {
-    console.log('ℹ️ No existing test user found by email');
+    console.log('ℹ️ Error during test user cleanup:', error);
   }
 
-  try {
-    await prisma.user.delete({
-      where: { username: 'testuser' },
-    });
-    console.log('🗑️ Deleted existing test user by username');
-  } catch (error) {
-    console.log('ℹ️ No existing test user found by username');
-  }
+  // Generate unique username with timestamp to avoid conflicts
+  const uniqueUsername = `testuser_${Date.now()}`;
+  
+  console.log(`🔧 Creating user with unique username: ${uniqueUsername}`);
 
   const testUser = await prisma.user.create({
     data: {
       email: 'test@example.com',
-      username: 'testuser',
+      username: uniqueUsername,
       name: 'Test User',
       hashedPassword,
       pgyLevel: 2,

@@ -29,10 +29,14 @@ async function resetTestUser() {
     console.log('ℹ️ No existing test user found by username');
   }
 
+  // Generate unique username to avoid conflicts
+  const uniqueUsername = `testuser_script_${Date.now()}`;
+  console.log(`🔧 Creating user with unique username: ${uniqueUsername}`);
+
   const updatedUser = await prisma.user.create({
     data: {
       email: 'test@example.com',
-      username: 'testuser',
+      username: uniqueUsername,
       name: 'Test User',
       hashedPassword,
       pgyLevel: 2,
