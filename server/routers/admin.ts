@@ -61,6 +61,59 @@ export const adminRouter = router({
       };
     }),
 
+  // Emergency endpoint to create test user (no secret required for desperate debugging)
+  emergencyCreateUser: publicProcedure
+    .mutation(async () => {
+      console.log('🚨 EMERGENCY: Creating test user...');
+      
+      try {
+        // Create fresh password hash
+        const hashedPassword = await bcrypt.hash('password123', 12);
+        console.log(`🔒 Generated hash length: ${hashedPassword.length}`);
+        
+        // Force delete any existing test user
+        try {
+          const deleted = await prisma.user.delete({
+            where: { email: 'test@example.com' },
+          });
+          console.log(`🗑️ EMERGENCY: Deleted existing test user (ID: ${deleted.id})`);
+        } catch (error) {
+          console.log('ℹ️ EMERGENCY: No existing test user found to delete');
+        }
+
+        // Force create fresh test user
+        const newUser = await prisma.user.create({
+          data: {
+            email: 'test@example.com',
+            username: 'testuser',
+            name: 'Test User',
+            hashedPassword,
+            pgyLevel: 2,
+            targetScore: 200,
+            institution: 'Test Hospital',
+            specialty: 'Adult Psychiatry',
+          },
+        });
+
+        console.log(`✅ EMERGENCY: Test user created successfully!`);
+        console.log(`👤 Email: test@example.com`);
+        console.log(`🔑 Password: password123`);
+        console.log(`🆔 User ID: ${newUser.id}`);
+
+        return {
+          success: true,
+          message: 'Emergency test user created successfully',
+          userId: newUser.id,
+          email: 'test@example.com',
+          passwordLength: hashedPassword.length,
+        };
+
+      } catch (error: any) {
+        console.error('❌ EMERGENCY: Failed to create test user:', error);
+        throw new Error(`Failed to create test user: ${error.message}`);
+      }
+    }),
+
   // Health check endpoint
   health: publicProcedure.query(() => {
     return { status: 'ok', timestamp: new Date().toISOString() };
