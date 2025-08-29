@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Check, Edit3, Save, X, Plus, Trash2 } from 'lucide-react';
+import { Check, Edit3, Save, X, Plus, Trash2, FileText } from 'lucide-react';
 import { Button } from './ui/Button';
 import { Input } from './ui/Input';
 
@@ -25,10 +25,11 @@ interface QuestionEditorProps {
   examYear?: number;
   examPart?: number;
   onSave: (updatedQuestion: ProcessedQuestion & { examYear: number; examPart: number }) => void;
+  onSaveToDraft?: (question: ProcessedQuestion) => void;
   onCancel?: () => void;
 }
 
-export const QuestionEditor = ({ question, examYear = new Date().getFullYear(), examPart = 1, onSave, onCancel }: QuestionEditorProps) => {
+export const QuestionEditor = ({ question, examYear = new Date().getFullYear(), examPart = 1, onSave, onSaveToDraft, onCancel }: QuestionEditorProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedQuestion, setEditedQuestion] = useState(question);
   const [selectedAnswer, setSelectedAnswer] = useState(question.correctAnswer || '');
@@ -45,6 +46,16 @@ export const QuestionEditor = ({ question, examYear = new Date().getFullYear(), 
     };
     onSave(finalQuestion);
     setIsEditing(false);
+  };
+
+  const handleSaveToDraftLocal = () => {
+    if (onSaveToDraft) {
+      const draftQuestion = {
+        ...editedQuestion,
+        correctAnswer: selectedAnswer,
+      };
+      onSaveToDraft(draftQuestion);
+    }
   };
 
   const handleCancel = () => {
@@ -92,15 +103,30 @@ export const QuestionEditor = ({ question, examYear = new Date().getFullYear(), 
         
         <div className="flex space-x-2">
           {!question.saved && (
-            <Button
-              size="sm"
-              onClick={handleSave}
-              className="flex items-center space-x-1"
-              disabled={!selectedAnswer}
-            >
-              <Save className="h-4 w-4" />
-              <span>Save Question</span>
-            </Button>
+            <>
+              <Button
+                size="sm"
+                onClick={handleSave}
+                className="flex items-center space-x-1"
+                disabled={!selectedAnswer}
+              >
+                <Save className="h-4 w-4" />
+                <span>Save Question</span>
+              </Button>
+              
+              {onSaveToDraft && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleSaveToDraftLocal}
+                  className="flex items-center space-x-1"
+                  title="Save as draft - you can complete this later"
+                >
+                  <FileText className="h-4 w-4" />
+                  <span>Save as Draft</span>
+                </Button>
+              )}
+            </>
           )}
           
           {!isEditing ? (

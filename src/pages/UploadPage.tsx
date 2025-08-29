@@ -1,11 +1,12 @@
 import { useState, useRef, useCallback } from 'react';
-import { Camera, Upload, FileImage, Loader2, AlertCircle, Calendar, Hash } from 'lucide-react';
+import { Camera, Upload, FileImage, Loader2, AlertCircle, Calendar, Hash, Save, Trash2, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { QuestionEditor } from '@/components/QuestionEditor';
 import { processImageWithAI } from '@/lib/aiVision';
 import { trpc } from '@/lib/trpc';
+import { useDrafts } from '@/hooks/useDrafts';
 
 interface ProcessedQuestion {
   number: number;
@@ -17,6 +18,7 @@ interface ProcessedQuestion {
   confidence?: number;
   saved?: boolean;
   isPublic?: boolean;
+  draftId?: string;
 }
 
 export const UploadPage = () => {
@@ -26,9 +28,13 @@ export const UploadPage = () => {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [examYear, setExamYear] = useState(new Date().getFullYear());
   const [examPart, setExamPart] = useState(1);
+  const [showDrafts, setShowDrafts] = useState(false);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
+  
+  // Draft management
+  const { drafts, saveDraft, removeDraft, clearAllDrafts, updateDraft } = useDrafts();
 
   // TRPC mutation for AI processing
   const aiProcessImage = trpc.ai.processImage.useMutation();
@@ -164,6 +170,26 @@ Be very careful to extract complete text and maintain formatting. Include ALL qu
     fileInputRef.current?.click();
   };
 
+  const handleSaveToDraft = (question: ProcessedQuestion) => {
+    const draftId = saveDraft({
+      ...question,
+      examYear,
+      examPart,
+    });
+    
+    // Remove from current processed questions if it was there
+    setProcessedQuestions(prev => prev.filter(q => q.number !== question.number));
+    
+    setError(null);
+    console.log('Question saved to drafts:', draftId);
+  };
+
+  const handleLoadFromDraft = (draft: ProcessedQuestion) => {
+    // Add to processed questions for immediate editing
+    setProcessedQuestions(prev => [...prev, draft]);
+    setShowDrafts(false);
+  };
+
   const handleQuestionSave = async (updatedQuestion: ProcessedQuestion & { examYear: number; examPart: number }) => {
     console.log('Saving question:', updatedQuestion);
     
@@ -182,6 +208,11 @@ Be very careful to extract complete text and maintain formatting. Include ALL qu
       });
       
       console.log('Question saved successfully:', savedQuestion.id);
+      
+      // Remove from drafts if it was a draft
+      if (updatedQuestion.draftId) {
+        removeDraft(updatedQuestion.draftId);
+      }
       
       // Update the local state to reflect the saved status
       setProcessedQuestions(prev => 
@@ -206,14 +237,92 @@ Be very careful to extract complete text and maintain formatting. Include ALL qu
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Header */}
-      <div className="text-center">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          Upload PRITE Questions
-        </h1>
-        <p className="text-gray-600">
-          Take photos or upload images of PRITE booklet pages to digitize questions
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            Upload PRITE Questions
+          </h1>
+          <p className="text-gray-600">
+            Take photos or upload images of PRITE booklet pages to digitize questions
+          </p>
+        </div>
+        {drafts.length > 0 && (
+          <Button
+            variant="outline"
+            onClick={() => setShowDrafts(!showDrafts)}
+            className="flex items-center space-x-2"
+          >
+            <FileText className="h-4 w-4" />
+            <span>Drafts ({drafts.length})</span>
+          </Button>
+        )}
       </div>
+
+      {/* Drafts Section */}
+      {showDrafts && drafts.length > 0 && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center space-x-2">
+                <FileText className="h-5 w-5" />
+                <span>Draft Questions ({drafts.length})</span>
+              </CardTitle>
+              <div className="flex space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={clearAllDrafts}
+                  className="text-red-600 hover:text-red-700"
+                >
+                  <Trash2 className="h-4 w-4 mr-1" />
+                  Clear All
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowDrafts(false)}
+                >
+                  Hide Drafts
+                </Button>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {drafts.map((draft) => (
+                <div key={draft.draftId} className="flex items-center justify-between p-4 border rounded-lg bg-amber-50 border-amber-200">
+                  <div className="flex-1">
+                    <div className="font-medium text-sm text-amber-900 line-clamp-2">
+                      {draft.text.substring(0, 100)}{draft.text.length > 100 ? '...' : ''}
+                    </div>
+                    <div className="text-xs text-amber-700 mt-1">
+                      {draft.category || 'Unknown Category'} • {draft.correctAnswer ? `Answer: ${draft.correctAnswer}` : 'No answer selected'}
+                    </div>
+                  </div>
+                  <div className="flex space-x-2 ml-4">
+                    <Button
+                      size="sm"
+                      onClick={() => handleLoadFromDraft(draft)}
+                      className="bg-amber-600 hover:bg-amber-700"
+                    >
+                      <Edit3 className="h-4 w-4 mr-1" />
+                      Continue
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => removeDraft(draft.draftId!)}
+                      className="text-red-600 hover:text-red-700"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Upload Options */}
       <Card>
@@ -350,6 +459,7 @@ Be very careful to extract complete text and maintain formatting. Include ALL qu
                 examYear={examYear}
                 examPart={examPart}
                 onSave={handleQuestionSave}
+                onSaveToDraft={handleSaveToDraft}
               />
             ))}
           </CardContent>
