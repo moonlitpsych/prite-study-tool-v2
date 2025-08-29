@@ -20,7 +20,7 @@
     "type-check": "tsc --noEmit",
     "preview": "vite preview",
     "render:build": "npm install && npm run db:generate && npm run build:client && npm run build:server",
-    "render:start": "npm run db:push && npm run db:seed && npm start",
+    "render:start": "npm run db:push && npm run db:seed && npm run reset-test-user && npm start",
     "reset-test-user": "tsx scripts/reset-test-user.ts"
   },
   "dependencies": {
