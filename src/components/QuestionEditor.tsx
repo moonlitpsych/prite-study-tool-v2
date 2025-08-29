@@ -90,6 +90,18 @@ export const QuestionEditor = ({ question, examYear = new Date().getFullYear(), 
         </div>
         
         <div className="flex space-x-2">
+          {!question.saved && (
+            <Button
+              size="sm"
+              onClick={handleSave}
+              className="flex items-center space-x-1"
+              disabled={!selectedAnswer}
+            >
+              <Save className="h-4 w-4" />
+              <span>Save Question</span>
+            </Button>
+          )}
+          
           {!isEditing ? (
             <Button
               variant="outline"
@@ -101,26 +113,15 @@ export const QuestionEditor = ({ question, examYear = new Date().getFullYear(), 
               <span>Edit</span>
             </Button>
           ) : (
-            <>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleCancel}
-                className="flex items-center space-x-1"
-              >
-                <X className="h-4 w-4" />
-                <span>Cancel</span>
-              </Button>
-              <Button
-                size="sm"
-                onClick={handleSave}
-                className="flex items-center space-x-1"
-                disabled={!selectedAnswer || question.saved}
-              >
-                <Save className="h-4 w-4" />
-                <span>{question.saved ? 'Saved' : 'Save Question'}</span>
-              </Button>
-            </>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleCancel}
+              className="flex items-center space-x-1"
+            >
+              <X className="h-4 w-4" />
+              <span>Cancel</span>
+            </Button>
           )}
         </div>
       </div>
@@ -168,6 +169,34 @@ export const QuestionEditor = ({ question, examYear = new Date().getFullYear(), 
         )}
       </div>
 
+      {/* Category */}
+      <div className="space-y-3">
+        <label className="font-medium text-gray-900">Category:</label>
+        {isEditing ? (
+          <select
+            value={editedQuestion.category || ''}
+            onChange={(e) => setEditedQuestion({ ...editedQuestion, category: e.target.value })}
+            className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">Select a category...</option>
+            <option value="Adult Psychiatry">Adult Psychiatry</option>
+            <option value="Child Psychiatry">Child Psychiatry</option>
+            <option value="Neurology">Neurology</option>
+            <option value="Psychology">Psychology</option>
+            <option value="Substance Use">Substance Use</option>
+            <option value="Emergency Psychiatry">Emergency Psychiatry</option>
+            <option value="Consultation-Liaison">Consultation-Liaison</option>
+            <option value="Pharmacology">Pharmacology</option>
+            <option value="Research & Statistics">Research & Statistics</option>
+            <option value="Ethics & Legal">Ethics & Legal</option>
+          </select>
+        ) : (
+          <div className="bg-gray-50 p-2 rounded-md text-sm">
+            {editedQuestion.category || 'No category selected'}
+          </div>
+        )}
+      </div>
+
       {/* Answer Choices */}
       <div className="space-y-3">
         <label className="font-medium text-gray-900">Answer Choices:</label>
@@ -181,8 +210,12 @@ export const QuestionEditor = ({ question, examYear = new Date().getFullYear(), 
                 name="correctAnswer"
                 value={option.label}
                 checked={selectedAnswer === option.label}
-                onChange={(e) => setSelectedAnswer(e.target.value)}
-                className="mt-1 h-4 w-4 text-green-600 focus:ring-green-500"
+                onChange={(e) => {
+                  console.log('Radio clicked:', e.target.value);
+                  setSelectedAnswer(e.target.value);
+                }}
+                className="mt-1 h-4 w-4 text-green-600 focus:ring-green-500 cursor-pointer"
+                style={{ accentColor: '#16a34a' }}
               />
               
               {/* Option Label */}
