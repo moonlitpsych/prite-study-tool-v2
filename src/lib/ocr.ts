@@ -22,7 +22,7 @@ const getWorker = async (): Promise<Worker> => {
     // Optimize for document/page recognition with multiple text blocks
     await worker.setParameters({
       tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.,?!():-; \n',
-      tessedit_pageseg_mode: '1', // Automatic page segmentation with OSD
+      tessedit_pageseg_mode: '1' as any, // Automatic page segmentation with OSD
       preserve_interword_spaces: '1',
       tessedit_do_invert: '0', // Don't invert image colors
     });

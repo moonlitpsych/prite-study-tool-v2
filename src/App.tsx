@@ -9,6 +9,9 @@ import { RegisterPage } from './pages/RegisterPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { StudyPage } from './pages/StudyPage';
 import { QuestionsPage } from './pages/QuestionsPage';
+import { QuestionDetailPage } from './pages/QuestionDetailPage';
+import { CreateQuestionPage } from './pages/CreateQuestionPage';
+import { EditQuestionPage } from './pages/EditQuestionPage';
 import { CommunityPage } from './pages/CommunityPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { UploadPage } from './pages/UploadPage';
@@ -69,6 +72,9 @@ function App() {
         <Route path="/" element={<DashboardPage />} />
         <Route path="/study" element={<StudyPage />} />
         <Route path="/questions" element={<QuestionsPage />} />
+        <Route path="/questions/create" element={<CreateQuestionPage />} />
+        <Route path="/questions/:id" element={<QuestionDetailPage />} />
+        <Route path="/questions/:id/edit" element={<EditQuestionPage />} />
         <Route path="/upload" element={<UploadPage />} />
         <Route path="/community" element={<CommunityPage />} />
         <Route path="/profile" element={<ProfilePage />} />

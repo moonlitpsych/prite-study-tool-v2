@@ -619,7 +619,7 @@ ${Object.entries(explanationData.incorrectExplanations)
   .map(([option, explanation]) => `${option}. ${explanation}`)
   .join('\n')}`;
 
-        const updatedQuestion = await ctx.prisma.question.update({
+        await ctx.prisma.question.update({
           where: { id: input.questionId },
           data: {
             explanation: fullExplanation,
@@ -643,7 +643,7 @@ This explanation was generated automatically. For the most accurate information,
 **Why other options are incorrect:**
 ${incorrectOptions.map(opt => `${opt.label}. This option is not the best choice for this clinical scenario.`).join('\n')}`;
 
-        const updatedQuestion = await ctx.prisma.question.update({
+        await ctx.prisma.question.update({
           where: { id: input.questionId },
           data: {
             explanation: fallbackExplanation,
