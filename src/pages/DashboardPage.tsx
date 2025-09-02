@@ -32,18 +32,18 @@ export const DashboardPage = () => {
   return (
     <div className="space-y-6">
       {/* Welcome header */}
-      <div className="bg-gradient-to-r from-primary/10 to-secondary/10 rounded-lg p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold mb-2">
+      <div className="bg-gradient-to-r from-primary/10 to-secondary/10 rounded-lg p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
+          <div className="flex-1">
+            <h1 className="text-2xl sm:text-3xl font-bold mb-2">
               Welcome back, {user?.name}! 👋
             </h1>
-            <p className="text-muted-foreground text-lg">
+            <p className="text-muted-foreground text-base sm:text-lg">
               Ready to ace your PRITE? Let's keep that study streak going!
             </p>
           </div>
-          <div className="hidden md:flex items-center space-x-4">
-            <div className="text-right">
+          <div className="flex items-center justify-between sm:justify-end sm:space-x-4">
+            <div className="text-center sm:text-right">
               <div className="text-2xl font-bold text-primary">{dashboardData?.studyStreak || 0}</div>
               <div className="text-sm text-muted-foreground">Day Streak 🔥</div>
             </div>
@@ -52,106 +52,106 @@ export const DashboardPage = () => {
       </div>
 
       {/* Quick stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
         <Card variant="outline">
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <BookOpen className="h-5 w-5 text-primary" />
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex items-center space-x-2 sm:space-x-3">
+              <div className="p-2 bg-primary/10 rounded-lg flex-shrink-0">
+                <BookOpen className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
               </div>
-              <div>
-                <div className="text-2xl font-bold">{dashboardData?.dueQuestionsCount || 0}</div>
-                <div className="text-sm text-muted-foreground">Questions Due</div>
+              <div className="min-w-0">
+                <div className="text-xl sm:text-2xl font-bold">{dashboardData?.dueQuestionsCount || 0}</div>
+                <div className="text-xs sm:text-sm text-muted-foreground">Questions Due</div>
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card variant="outline">
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <CheckCircle className="h-5 w-5 text-green-600" />
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex items-center space-x-2 sm:space-x-3">
+              <div className="p-2 bg-green-100 rounded-lg flex-shrink-0">
+                <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
               </div>
-              <div>
-                <div className="text-2xl font-bold">{dashboardData?.recentAccuracy?.toFixed(0) || 0}%</div>
-                <div className="text-sm text-muted-foreground">Recent Accuracy</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card variant="outline">
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-purple-100 rounded-lg">
-                <Trophy className="h-5 w-5 text-purple-600" />
-              </div>
-              <div>
-                <div className="text-2xl font-bold">{dashboardData?.contributionStats?.contributionScore || 0}</div>
-                <div className="text-sm text-muted-foreground">Contribution Score</div>
+              <div className="min-w-0">
+                <div className="text-xl sm:text-2xl font-bold">{dashboardData?.recentAccuracy?.toFixed(0) || 0}%</div>
+                <div className="text-xs sm:text-sm text-muted-foreground">Recent Accuracy</div>
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card variant="outline">
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-orange-100 rounded-lg">
-                <Zap className="h-5 w-5 text-orange-600" />
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex items-center space-x-2 sm:space-x-3">
+              <div className="p-2 bg-purple-100 rounded-lg flex-shrink-0">
+                <Trophy className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600" />
               </div>
-              <div>
-                <div className="text-2xl font-bold">{dashboardData?.totalStudiedThisWeek || 0}</div>
-                <div className="text-sm text-muted-foreground">This Week</div>
+              <div className="min-w-0">
+                <div className="text-xl sm:text-2xl font-bold">{dashboardData?.contributionStats?.contributionScore || 0}</div>
+                <div className="text-xs sm:text-sm text-muted-foreground">Contribution Score</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card variant="outline">
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex items-center space-x-2 sm:space-x-3">
+              <div className="p-2 bg-orange-100 rounded-lg flex-shrink-0">
+                <Zap className="h-4 w-4 sm:h-5 sm:w-5 text-orange-600" />
+              </div>
+              <div className="min-w-0">
+                <div className="text-xl sm:text-2xl font-bold">{dashboardData?.totalStudiedThisWeek || 0}</div>
+                <div className="text-xs sm:text-sm text-muted-foreground">This Week</div>
               </div>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Left column - Study actions */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 space-y-4 sm:space-y-6">
           {/* Quick study */}
           <Card variant="elevated">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center space-x-2 text-lg sm:text-xl">
                 <Target className="h-5 w-5" />
                 <span>Quick Study</span>
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-sm sm:text-base">
                 Jump right into your personalized study session
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-0">
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 bg-accent/50 rounded-lg">
-                  <div>
-                    <div className="font-medium">Due Questions</div>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 bg-accent/50 rounded-lg space-y-3 sm:space-y-0">
+                  <div className="flex-1">
+                    <div className="font-medium text-base sm:text-lg">Due Questions</div>
                     <div className="text-sm text-muted-foreground">
                       {dashboardData?.dueQuestionsCount} questions waiting for review
                     </div>
                   </div>
-                  <Link to="/study">
-                    <Button size="lg">
+                  <Link to="/study" className="w-full sm:w-auto">
+                    <Button size="lg" className="w-full sm:w-auto">
                       <Clock className="h-4 w-4 mr-2" />
                       Start Studying
                     </Button>
                   </Link>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <Link to="/study?mode=practice">
-                    <Button variant="outline" className="w-full">
-                      <BookOpen className="h-4 w-4 mr-2" />
-                      Practice Mode
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                  <Link to="/study?mode=practice" className="w-full">
+                    <Button variant="outline" className="w-full h-12 sm:h-10">
+                      <BookOpen className="h-4 w-4 mr-2 flex-shrink-0" />
+                      <span>Practice Mode</span>
                     </Button>
                   </Link>
-                  <Link to="/questions/create">
-                    <Button variant="outline" className="w-full">
-                      <Target className="h-4 w-4 mr-2" />
-                      Add Questions
+                  <Link to="/questions/create" className="w-full">
+                    <Button variant="outline" className="w-full h-12 sm:h-10">
+                      <Target className="h-4 w-4 mr-2 flex-shrink-0" />
+                      <span>Add Questions</span>
                     </Button>
                   </Link>
                 </div>
@@ -162,7 +162,7 @@ export const DashboardPage = () => {
           {/* Recent sessions */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
+              <CardTitle className="flex items-center space-x-2 text-lg sm:text-xl">
                 <Calendar className="h-5 w-5" />
                 <span>Recent Study Sessions</span>
               </CardTitle>
@@ -173,17 +173,17 @@ export const DashboardPage = () => {
                   {dashboardData.recentSessions.map((session) => (
                     <div 
                       key={session.id} 
-                      className="flex items-center justify-between p-3 bg-accent/30 rounded-lg"
+                      className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 bg-accent/30 rounded-lg space-y-2 sm:space-y-0"
                     >
-                      <div>
-                        <div className="font-medium">
+                      <div className="flex-1">
+                        <div className="font-medium text-sm sm:text-base">
                           {session.totalQuestions} questions
                         </div>
-                        <div className="text-sm text-muted-foreground">
+                        <div className="text-xs sm:text-sm text-muted-foreground">
                           {new Date(session.startedAt).toLocaleDateString()} • {session.accuracy.toFixed(0)}% accuracy
                         </div>
                       </div>
-                      <div className="text-right">
+                      <div className="text-left sm:text-right">
                         <div className="text-sm font-medium text-primary">
                           {Math.floor((session.totalTimeSpent || 0) / 60000)}m
                         </div>
@@ -192,10 +192,10 @@ export const DashboardPage = () => {
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  <BookOpen className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>No recent study sessions</p>
-                  <p className="text-sm">Start your first session to see your progress here</p>
+                <div className="text-center py-6 sm:py-8 text-muted-foreground">
+                  <BookOpen className="h-10 w-10 sm:h-12 sm:w-12 mx-auto mb-3 sm:mb-4 opacity-50" />
+                  <p className="text-sm sm:text-base">No recent study sessions</p>
+                  <p className="text-xs sm:text-sm">Start your first session to see your progress here</p>
                 </div>
               )}
             </CardContent>
@@ -203,11 +203,11 @@ export const DashboardPage = () => {
         </div>
 
         {/* Right column - Community and progress */}
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           {/* PRITE scores */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
+              <CardTitle className="flex items-center space-x-2 text-lg sm:text-xl">
                 <TrendingUp className="h-5 w-5" />
                 <span>PRITE Progress</span>
               </CardTitle>
@@ -219,14 +219,14 @@ export const DashboardPage = () => {
                     <div key={score.id} className="p-3 bg-accent/30 rounded-lg">
                       <div className="flex items-center justify-between">
                         <div>
-                          <div className="font-medium">{score.totalScore}/300</div>
-                          <div className="text-sm text-muted-foreground">
+                          <div className="font-medium text-sm sm:text-base">{score.totalScore}/300</div>
+                          <div className="text-xs sm:text-sm text-muted-foreground">
                             {new Date(score.examDate).toLocaleDateString()}
                           </div>
                         </div>
                         {score.percentile && (
                           <div className="text-right">
-                            <div className="text-sm font-medium text-primary">
+                            <div className="text-xs sm:text-sm font-medium text-primary">
                               {score.percentile}th percentile
                             </div>
                           </div>
@@ -241,13 +241,13 @@ export const DashboardPage = () => {
                   </Link>
                 </div>
               ) : (
-                <div className="text-center py-6">
-                  <TrendingUp className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                  <p className="text-sm text-muted-foreground mb-3">
+                <div className="text-center py-4 sm:py-6">
+                  <TrendingUp className="h-6 w-6 sm:h-8 sm:w-8 mx-auto mb-2 opacity-50" />
+                  <p className="text-xs sm:text-sm text-muted-foreground mb-3">
                     Track your PRITE scores to see your progress
                   </p>
                   <Link to="/profile">
-                    <Button size="sm">Add PRITE Score</Button>
+                    <Button size="sm" className="w-full sm:w-auto">Add PRITE Score</Button>
                   </Link>
                 </div>
               )}
@@ -257,31 +257,31 @@ export const DashboardPage = () => {
           {/* Community contribution */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
+              <CardTitle className="flex items-center space-x-2 text-lg sm:text-xl">
                 <Users className="h-5 w-5" />
                 <span>Community Impact</span>
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm">Public Questions</span>
-                  <span className="font-medium">{dashboardData?.contributionStats?.publicQuestions || 0}</span>
+                  <span className="text-xs sm:text-sm">Public Questions</span>
+                  <span className="font-medium text-sm sm:text-base">{dashboardData?.contributionStats?.publicQuestions || 0}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm">Reputation</span>
-                  <span className="font-medium flex items-center">
-                    <Star className="h-4 w-4 mr-1 text-yellow-500" />
+                  <span className="text-xs sm:text-sm">Reputation</span>
+                  <span className="font-medium flex items-center text-sm sm:text-base">
+                    <Star className="h-3 w-3 sm:h-4 sm:w-4 mr-1 text-yellow-500" />
                     {dashboardData?.contributionStats?.reputation || 0}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm">Total Studied</span>
-                  <span className="font-medium">{dashboardData?.contributionStats?.totalStudied || 0}</span>
+                  <span className="text-xs sm:text-sm">Total Studied</span>
+                  <span className="font-medium text-sm sm:text-base">{dashboardData?.contributionStats?.totalStudied || 0}</span>
                 </div>
                 
-                <Link to="/community">
-                  <Button variant="outline" size="sm" className="w-full">
+                <Link to="/community" className="block">
+                  <Button variant="outline" size="sm" className="w-full h-10">
                     <Users className="h-4 w-4 mr-2" />
                     View Community
                   </Button>

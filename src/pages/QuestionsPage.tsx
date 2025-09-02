@@ -175,20 +175,20 @@ export const QuestionsPage = () => {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
         <div>
-          <h1 className="text-3xl font-bold">Question Bank</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-2xl sm:text-3xl font-bold">Question Bank</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">
             {viewMode === 'community' ? 'Browse community questions' : 'Manage your questions'}
           </p>
         </div>
-        <div className="flex items-center space-x-3">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-3 sm:space-y-0 sm:space-x-3">
           <div className="flex bg-gray-100 rounded-lg p-1">
             <button
               onClick={() => setViewMode('community')}
-              className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+              className={`flex-1 sm:flex-none px-3 py-2 rounded text-sm font-medium transition-colors ${
                 viewMode === 'community' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'
               }`}
             >
@@ -196,15 +196,15 @@ export const QuestionsPage = () => {
             </button>
             <button
               onClick={() => setViewMode('my-questions')}
-              className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+              className={`flex-1 sm:flex-none px-3 py-2 rounded text-sm font-medium transition-colors ${
                 viewMode === 'my-questions' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'
               }`}
             >
               My Questions
             </button>
           </div>
-          <Link to="/questions/create">
-            <Button>
+          <Link to="/questions/create" className="w-full sm:w-auto">
+            <Button className="w-full sm:w-auto">
               <Plus className="h-4 w-4 mr-2" />
               Add Question
             </Button>
@@ -214,7 +214,7 @@ export const QuestionsPage = () => {
 
       {/* Search and Filters */}
       <div className="space-y-4">
-        <div className="flex items-center space-x-4">
+        <div className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
           <div className="flex-1">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -223,14 +223,14 @@ export const QuestionsPage = () => {
                 placeholder="Search questions, categories, or topics..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-input rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full pl-10 pr-4 py-3 sm:py-2 border border-input rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-base sm:text-sm"
               />
             </div>
           </div>
           <Button 
             variant="outline" 
             onClick={() => setShowFilters(!showFilters)}
-            className={showFilters ? 'bg-primary/10' : ''}
+            className={`w-full sm:w-auto h-12 sm:h-auto ${showFilters ? 'bg-primary/10' : ''}`}
           >
             <Filter className="h-4 w-4 mr-2" />
             Filters
@@ -246,13 +246,13 @@ export const QuestionsPage = () => {
         {showFilters && (
           <Card>
             <CardContent className="p-4">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-2">Category</label>
                   <select
                     value={filterCategory}
                     onChange={(e) => setFilterCategory(e.target.value as FilterCategory)}
-                    className="w-full p-2 border border-input rounded-md bg-background"
+                    className="w-full p-3 sm:p-2 border border-input rounded-md bg-background text-base sm:text-sm"
                   >
                     {categories.map(cat => (
                       <option key={cat} value={cat}>
@@ -266,7 +266,7 @@ export const QuestionsPage = () => {
                   <select
                     value={filterDifficulty}
                     onChange={(e) => setFilterDifficulty(e.target.value as FilterDifficulty)}
-                    className="w-full p-2 border border-input rounded-md bg-background"
+                    className="w-full p-3 sm:p-2 border border-input rounded-md bg-background text-base sm:text-sm"
                   >
                     <option value="all">All Difficulties</option>
                     <option value="easy">Easy</option>
@@ -279,7 +279,7 @@ export const QuestionsPage = () => {
                   <select
                     value={filterExamPart}
                     onChange={(e) => setFilterExamPart(e.target.value as FilterExamPart)}
-                    className="w-full p-2 border border-input rounded-md bg-background"
+                    className="w-full p-3 sm:p-2 border border-input rounded-md bg-background text-base sm:text-sm"
                   >
                     <option value="all">All Parts</option>
                     <option value="Part 1">Part 1</option>
@@ -291,7 +291,7 @@ export const QuestionsPage = () => {
                   <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value as SortBy)}
-                    className="w-full p-2 border border-input rounded-md bg-background"
+                    className="w-full p-3 sm:p-2 border border-input rounded-md bg-background text-base sm:text-sm"
                   >
                     <option value="newest">Newest First</option>
                     <option value="oldest">Oldest First</option>
@@ -300,7 +300,7 @@ export const QuestionsPage = () => {
                   </select>
                 </div>
               </div>
-              <div className="flex justify-end mt-4">
+              <div className="flex justify-center sm:justify-end mt-4">
                 <Button
                   variant="ghost"
                   size="sm"
@@ -310,6 +310,7 @@ export const QuestionsPage = () => {
                     setFilterExamPart('all');
                     setSearchQuery('');
                   }}
+                  className="w-full sm:w-auto"
                 >
                   Clear All
                 </Button>

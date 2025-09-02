@@ -40,11 +40,11 @@ export const Layout = ({ children }: LayoutProps) => {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-16 items-center justify-between">
-          <div className="flex items-center gap-6">
+        <div className="container flex h-14 sm:h-16 items-center justify-between px-4 sm:px-6">
+          <div className="flex items-center gap-4 sm:gap-6">
             <Link to="/" className="flex items-center space-x-2">
-              <Target className="h-8 w-8 text-primary" />
-              <span className="text-xl font-bold">PRITE Study</span>
+              <Target className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
+              <span className="text-lg sm:text-xl font-bold">PRITE Study</span>
             </Link>
 
             <nav className="hidden md:flex items-center space-x-1">
@@ -68,9 +68,9 @@ export const Layout = ({ children }: LayoutProps) => {
             </nav>
           </div>
 
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 sm:space-x-4">
             {/* User info */}
-            <div className="hidden sm:flex items-center space-x-3">
+            <div className="hidden lg:flex items-center space-x-3">
               <div className="flex items-center space-x-2 text-sm">
                 <Trophy className="h-4 w-4 text-primary" />
                 <span className="text-muted-foreground">Score:</span>
@@ -81,6 +81,11 @@ export const Layout = ({ children }: LayoutProps) => {
                 <span className="text-muted-foreground">Welcome,</span>
                 <span className="ml-1 font-medium">{user?.name}</span>
               </div>
+            </div>
+
+            {/* Mobile user indicator */}
+            <div className="lg:hidden flex items-center text-xs">
+              <span className="font-medium">{user?.name}</span>
             </div>
 
             {/* Profile dropdown trigger */}
@@ -98,23 +103,23 @@ export const Layout = ({ children }: LayoutProps) => {
       </header>
 
       {/* Mobile navigation */}
-      <nav className="md:hidden sticky top-16 z-30 border-b bg-background">
-        <div className="container">
-          <div className="flex space-x-1 p-2 overflow-x-auto">
+      <nav className="md:hidden sticky top-14 sm:top-16 z-30 border-b bg-background">
+        <div className="container px-4">
+          <div className="flex space-x-1 py-2 overflow-x-auto scrollbar-hide">
             {navigation.map((item) => {
               const Icon = item.icon;
               return (
                 <Link
                   key={item.href}
                   to={item.href}
-                  className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium whitespace-nowrap transition-colors ${
+                  className={`flex items-center space-x-1.5 px-3 py-2 rounded-md text-sm font-medium whitespace-nowrap transition-colors flex-shrink-0 ${
                     isActive(item.href)
                       ? 'bg-accent text-accent-foreground'
                       : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
                   }`}
                 >
                   <Icon className="h-4 w-4" />
-                  <span>{item.name}</span>
+                  <span className="text-xs sm:text-sm">{item.name}</span>
                 </Link>
               );
             })}
@@ -124,7 +129,7 @@ export const Layout = ({ children }: LayoutProps) => {
 
       {/* Main content */}
       <main className="flex-1">
-        <div className="container py-6">
+        <div className="container py-4 sm:py-6 px-4 sm:px-6">
           {children}
         </div>
       </main>
