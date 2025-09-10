@@ -5,18 +5,21 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { StudySession } from '@/components/StudySession';
 import { StudyResults } from '@/components/StudyResults';
 import { trpc } from '@/lib/trpc';
-import { BookOpen, Play, Settings, TrendingUp } from 'lucide-react';
+import { BookOpen, Play, Settings, TrendingUp, BarChart3, Target, Users, AlertCircle } from 'lucide-react';
 
-type StudyMode = 'spaced' | 'practice' | 'custom';
+type StudyMode = 'spaced' | 'practice' | 'frequency' | 'custom';
+type FrequencyMode = 'high_yield' | 'underrepresented' | 'most_studied';
 type PageState = 'setup' | 'session' | 'results';
 
 export const StudyPage = () => {
   const [studyMode, setStudyMode] = useState<StudyMode>('spaced');
+  const [frequencyMode, setFrequencyMode] = useState<FrequencyMode>('high_yield');
   const [pageState, setPageState] = useState<PageState>('setup');
   const [questionCount, setQuestionCount] = useState(20);
   const [categories, setCategories] = useState<string[]>([]);
   const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard' | undefined>();
-  const [currentSession, setCurrentSession] = useState<{ sessionId: string; questions: any[] } | null>(null);
+  const [examPart, setExamPart] = useState<'Part 1' | 'Part 2' | undefined>();
+  const [currentSession, setCurrentSession] = useState<{ sessionId: string; questions: any[]; metadata?: any } | null>(null);
   const [sessionResults, setSessionResults] = useState<any>(null);
 
   // Get due questions count for spaced repetition
@@ -27,6 +30,7 @@ export const StudyPage = () => {
 
   // Mutations
   const startSessionMutation = trpc.study.startSession.useMutation();
+  const startFrequencySessionMutation = trpc.study.startFrequencySession.useMutation();
   const recordStudyMutation = trpc.study.recordStudy.useMutation();
   const finishSessionMutation = trpc.study.finishSession.useMutation();
 
@@ -43,12 +47,24 @@ export const StudyPage = () => {
 
   const handleStartSession = async () => {
     try {
-      const result = await startSessionMutation.mutateAsync({
-        questionCount,
-        categories: categories.length > 0 ? categories : undefined,
-        difficulty,
-        onlyDue: studyMode === 'spaced',
-      });
+      let result;
+      
+      if (studyMode === 'frequency') {
+        result = await startFrequencySessionMutation.mutateAsync({
+          questionCount,
+          mode: frequencyMode,
+          categories: categories.length > 0 ? categories : undefined,
+          examPart,
+          onlyDue: true, // Always use spaced repetition for frequency mode
+        });
+      } else {
+        result = await startSessionMutation.mutateAsync({
+          questionCount,
+          categories: categories.length > 0 ? categories : undefined,
+          difficulty,
+          onlyDue: studyMode === 'spaced',
+        });
+      }
       
       if (result.questions.length === 0) {
         alert('No questions available for the selected criteria. Try adjusting your filters or upload some questions first!');
@@ -156,7 +172,7 @@ export const StudyPage = () => {
         </Card>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className={`cursor-pointer transition-all ${studyMode === 'spaced' ? 'ring-2 ring-primary' : ''}`}
               onClick={() => setStudyMode('spaced')}>
           <CardHeader>
@@ -174,6 +190,24 @@ export const StudyPage = () => {
                 {dueCount} questions due
               </p>
             )}
+          </CardContent>
+        </Card>
+
+        <Card className={`cursor-pointer transition-all ${studyMode === 'frequency' ? 'ring-2 ring-primary' : ''}`}
+              onClick={() => setStudyMode('frequency')}>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <BarChart3 className="h-5 w-5" />
+              <span>Study by Frequency</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">
+              Focus on high-yield topics that appear most frequently on PRITE exams
+            </p>
+            <p className="text-sm font-medium mt-2 text-green-600">
+              Smart topic selection
+            </p>
           </CardContent>
         </Card>
 
@@ -229,6 +263,96 @@ export const StudyPage = () => {
               </select>
             </div>
 
+            {studyMode === 'frequency' && (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Frequency Mode</label>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <Card 
+                      className={`cursor-pointer transition-all ${frequencyMode === 'high_yield' ? 'ring-2 ring-primary' : 'hover:bg-accent'}`}
+                      onClick={() => setFrequencyMode('high_yield')}
+                    >
+                      <CardContent className="p-3">
+                        <div className="flex items-center space-x-2">
+                          <Target className="h-4 w-4 text-yellow-600" />
+                          <div>
+                            <div className="font-medium text-sm">High-Yield Topics</div>
+                            <div className="text-xs text-muted-foreground">Most frequent on PRITE</div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card 
+                      className={`cursor-pointer transition-all ${frequencyMode === 'most_studied' ? 'ring-2 ring-primary' : 'hover:bg-accent'}`}
+                      onClick={() => setFrequencyMode('most_studied')}
+                    >
+                      <CardContent className="p-3">
+                        <div className="flex items-center space-x-2">
+                          <Users className="h-4 w-4 text-green-600" />
+                          <div>
+                            <div className="font-medium text-sm">Most Studied</div>
+                            <div className="text-xs text-muted-foreground">Popular with users</div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card 
+                      className={`cursor-pointer transition-all ${frequencyMode === 'underrepresented' ? 'ring-2 ring-primary' : 'hover:bg-accent'}`}
+                      onClick={() => setFrequencyMode('underrepresented')}
+                    >
+                      <CardContent className="p-3">
+                        <div className="flex items-center space-x-2">
+                          <AlertCircle className="h-4 w-4 text-blue-600" />
+                          <div>
+                            <div className="font-medium text-sm">Underrepresented</div>
+                            <div className="text-xs text-muted-foreground">Need more questions</div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium mb-2">Exam Part (optional)</label>
+                  <select 
+                    value={examPart || ''}
+                    onChange={(e) => setExamPart(e.target.value as any || undefined)}
+                    className="flex h-10 w-full max-w-xs rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  >
+                    <option value="">All Parts</option>
+                    <option value="Part 1">Part 1</option>
+                    <option value="Part 2">Part 2</option>
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium mb-2">Categories (optional)</label>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                    {availableCategories.map((category) => (
+                      <label key={category} className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          checked={categories.includes(category)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setCategories([...categories, category]);
+                            } else {
+                              setCategories(categories.filter(c => c !== category));
+                            }
+                          }}
+                          className="h-4 w-4 text-blue-600 rounded"
+                        />
+                        <span className="text-sm">{category}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
             {(studyMode === 'practice' || studyMode === 'custom') && (
               <div className="space-y-4">
                 <div>
@@ -274,9 +398,9 @@ export const StudyPage = () => {
               size="lg" 
               className="w-full md:w-auto"
               onClick={handleStartSession}
-              disabled={startSessionMutation.isLoading}
+              disabled={startSessionMutation.isLoading || startFrequencySessionMutation.isLoading}
             >
-              {startSessionMutation.isLoading ? (
+              {(startSessionMutation.isLoading || startFrequencySessionMutation.isLoading) ? (
                 <LoadingSpinner className="h-4 w-4 mr-2" />
               ) : (
                 <Play className="h-4 w-4 mr-2" />

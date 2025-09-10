@@ -10,7 +10,8 @@ import {
   User, 
   LogOut,
   Trophy,
-  Target
+  Target,
+  BarChart3
 } from 'lucide-react';
 
 interface LayoutProps {
@@ -26,6 +27,7 @@ export const Layout = ({ children }: LayoutProps) => {
     { name: 'Study', href: '/study', icon: BookOpen },
     { name: 'Questions', href: '/questions', icon: MessageSquare },
     { name: 'Upload', href: '/upload', icon: Upload },
+    { name: 'Analytics', href: '/analytics', icon: BarChart3 },
     { name: 'Community', href: '/community', icon: Users },
   ];
 

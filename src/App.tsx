@@ -15,6 +15,7 @@ import { EditQuestionPage } from './pages/EditQuestionPage';
 import { CommunityPage } from './pages/CommunityPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { UploadPage } from './pages/UploadPage';
+import { AnalyticsPage } from './pages/AnalyticsPage';
 
 // Components
 import { Layout } from './components/Layout';
@@ -77,6 +78,7 @@ function App() {
         <Route path="/questions/:id/edit" element={<EditQuestionPage />} />
         <Route path="/upload" element={<UploadPage />} />
         <Route path="/community" element={<CommunityPage />} />
+        <Route path="/analytics" element={<AnalyticsPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

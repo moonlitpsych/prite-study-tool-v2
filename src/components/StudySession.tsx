@@ -48,6 +48,7 @@ export const StudySession = ({ sessionId, questions, onComplete, onRecordAnswer 
   });
   const [generatingExplanation, setGeneratingExplanation] = useState(false);
   const [aiExplanation, setAiExplanation] = useState<string | null>(null);
+  const [currentTime, setCurrentTime] = useState<number>(0);
 
   // TRPC mutation for generating explanations
   const generateExplanationMutation = trpc.questions.generateExplanation.useMutation();
@@ -57,8 +58,20 @@ export const StudySession = ({ sessionId, questions, onComplete, onRecordAnswer 
 
   useEffect(() => {
     setStartTime(Date.now());
+    setCurrentTime(0);
     setAiExplanation(null); // Reset AI explanation for new question
   }, [currentIndex]);
+
+  // Timer effect for real-time display
+  useEffect(() => {
+    const timer = setInterval(() => {
+      if (!isAnswered) {
+        setCurrentTime(Date.now() - startTime);
+      }
+    }, 100); // Update every 100ms for smooth display
+
+    return () => clearInterval(timer);
+  }, [startTime, isAnswered]);
 
   const handleAnswerSelect = (optionLabel: string) => {
     if (isAnswered) return;
@@ -149,23 +162,51 @@ export const StudySession = ({ sessionId, questions, onComplete, onRecordAnswer 
 
   const accuracy = sessionStats.total > 0 ? Math.round((sessionStats.correct / sessionStats.total) * 100) : 0;
 
+  // Format time for display
+  const formatTime = (milliseconds: number) => {
+    const seconds = Math.floor(milliseconds / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
+
+  // Get timer color based on elapsed time
+  const getTimerColor = (ms: number) => {
+    const seconds = ms / 1000;
+    if (seconds < 30) return 'text-green-600';
+    if (seconds < 60) return 'text-yellow-600';
+    return 'text-red-600';
+  };
+
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Progress Bar */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 space-y-2 sm:space-y-0">
         <div className="flex items-center space-x-4">
           <span className="text-sm text-gray-500">
             Question {currentIndex + 1} of {questions.length}
           </span>
-          <div className="w-64 bg-gray-200 rounded-full h-2">
+          <div className="w-48 sm:w-64 bg-gray-200 rounded-full h-2">
             <div
               className="bg-blue-500 h-2 rounded-full transition-all duration-300"
               style={{ width: `${((currentIndex + 1) / questions.length) * 100}%` }}
             />
           </div>
         </div>
-        <div className="text-sm text-gray-500">
-          Accuracy: {accuracy}% ({sessionStats.correct}/{sessionStats.total})
+        
+        <div className="flex items-center space-x-4">
+          {/* Timer Display */}
+          <div className="flex items-center space-x-1">
+            <Clock className={`h-4 w-4 ${getTimerColor(currentTime)}`} />
+            <span className={`text-sm font-mono ${getTimerColor(currentTime)}`}>
+              {formatTime(currentTime)}
+            </span>
+          </div>
+          
+          {/* Accuracy */}
+          <div className="text-sm text-gray-500">
+            Accuracy: {accuracy}% ({sessionStats.correct}/{sessionStats.total})
+          </div>
         </div>
       </div>
 

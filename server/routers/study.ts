@@ -61,6 +61,202 @@ function responseToQuality(wasCorrect: boolean, confidence: string, timeSpent: n
 }
 
 export const studyRouter = router({
+  // Start a study session focused on high-frequency topics
+  startFrequencySession: protectedProcedure
+    .input(z.object({
+      questionCount: z.number().min(1).max(50).default(20),
+      mode: z.enum(['high_yield', 'underrepresented', 'most_studied']).default('high_yield'),
+      categories: z.array(z.string()).optional(),
+      examPart: z.enum(['Part 1', 'Part 2']).optional(),
+      onlyDue: z.boolean().default(true),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      const { questionCount, mode, categories, examPart, onlyDue } = input;
+
+      // Create study session
+      const session = await ctx.prisma.studySession.create({
+        data: {
+          userId: ctx.user.id,
+        },
+      });
+
+      // Get topic analytics to determine high-frequency topics
+      const questions = await ctx.prisma.question.findMany({
+        where: {
+          OR: [
+            { isPublic: true },
+            { createdById: ctx.user.id },
+          ],
+          ...(categories && categories.length > 0 && { category: { in: categories } }),
+          ...(examPart && { examPart }),
+        },
+        select: {
+          id: true,
+          topics: true,
+          category: true,
+          timesStudied: true,
+          createdAt: true,
+        },
+      });
+
+      // Calculate topic frequency
+      const topicFrequency = new Map<string, { count: number; totalStudied: number; questions: string[] }>();
+      
+      questions.forEach(question => {
+        const topics = question.topics || [];
+        topics.forEach(topic => {
+          if (!topicFrequency.has(topic)) {
+            topicFrequency.set(topic, { count: 0, totalStudied: 0, questions: [] });
+          }
+          const data = topicFrequency.get(topic)!;
+          data.count += 1;
+          data.totalStudied += question.timesStudied || 0;
+          data.questions.push(question.id);
+        });
+      });
+
+      // Convert to sorted array based on mode
+      const topicStats = Array.from(topicFrequency.entries()).map(([topic, data]) => ({
+        topic,
+        count: data.count,
+        frequency: data.count / questions.length,
+        totalStudied: data.totalStudied,
+        avgStudied: data.count > 0 ? data.totalStudied / data.count : 0,
+        questionIds: data.questions,
+      }));
+
+      // Sort by mode preference
+      let targetTopics: string[];
+      switch (mode) {
+        case 'high_yield':
+          // Topics with frequency >= 10% or count >= 10
+          targetTopics = topicStats
+            .filter(t => t.frequency >= 0.1 || t.count >= 10)
+            .sort((a, b) => b.frequency - a.frequency)
+            .slice(0, 10) // Top 10 high-yield topics
+            .map(t => t.topic);
+          break;
+        case 'most_studied':
+          targetTopics = topicStats
+            .sort((a, b) => b.totalStudied - a.totalStudied)
+            .slice(0, 10)
+            .map(t => t.topic);
+          break;
+        case 'underrepresented':
+          targetTopics = topicStats
+            .filter(t => t.count <= 5) // Less than 5 questions
+            .sort((a, b) => a.count - b.count)
+            .slice(0, 10)
+            .map(t => t.topic);
+          break;
+        default:
+          targetTopics = [];
+      }
+
+      // Build query for frequency-focused questions
+      let questionWhere: any = {
+        OR: [
+          { isPublic: true },
+          { createdById: ctx.user.id },
+        ],
+        ...(categories && categories.length > 0 && { category: { in: categories } }),
+        ...(examPart && { examPart }),
+      };
+
+      // Filter by target topics
+      if (targetTopics.length > 0) {
+        questionWhere.topics = {
+          hasSome: targetTopics, // Questions that have at least one of these topics
+        };
+      }
+
+      // Apply due filter if needed
+      if (onlyDue) {
+        const now = new Date();
+        questionWhere.OR = [
+          {
+            // Never studied by this user
+            NOT: {
+              studyRecords: {
+                some: { userId: ctx.user.id },
+              },
+            },
+            ...questionWhere,
+          },
+          {
+            // Due for review
+            studyRecords: {
+              some: {
+                userId: ctx.user.id,
+                nextReviewDate: { lte: now },
+              },
+            },
+            ...questionWhere,
+          },
+        ];
+        delete questionWhere.isPublic; // Remove to avoid conflict with OR
+      }
+
+      const frequencyQuestions = await ctx.prisma.question.findMany({
+        where: questionWhere,
+        include: {
+          createdBy: {
+            select: { username: true, name: true },
+          },
+          studyRecords: {
+            where: { userId: ctx.user.id },
+            orderBy: { createdAt: 'desc' },
+            take: 1,
+          },
+        },
+        take: questionCount * 2, // Extra for filtering
+      });
+
+      // Sort by topic priority and spaced repetition
+      const sortedQuestions = frequencyQuestions
+        .map(question => {
+          const lastRecord = question.studyRecords[0];
+          const overduePriority = lastRecord 
+            ? new Date().getTime() - new Date(lastRecord.nextReviewDate).getTime()
+            : 0;
+          
+          // Calculate topic priority based on mode
+          let topicPriority = 0;
+          const questionTopics = question.topics || [];
+          for (const topic of questionTopics) {
+            const topicIndex = targetTopics.indexOf(topic);
+            if (topicIndex >= 0) {
+              topicPriority += (targetTopics.length - topicIndex); // Higher priority for earlier topics
+            }
+          }
+          
+          return { 
+            ...question, 
+            priority: topicPriority * 1000 + overduePriority, // Topic priority weighted higher
+          };
+        })
+        .sort((a, b) => b.priority - a.priority)
+        .slice(0, questionCount);
+
+      return {
+        sessionId: session.id,
+        questions: sortedQuestions.map(({ priority, ...q }) => q),
+        mode,
+        targetTopics,
+        metadata: {
+          totalCandidates: frequencyQuestions.length,
+          topicStats: targetTopics.map(topic => {
+            const stats = topicStats.find(t => t.topic === topic);
+            return {
+              topic,
+              frequency: stats?.frequency || 0,
+              questionCount: stats?.count || 0,
+            };
+          }),
+        },
+      };
+    }),
+
   // Start a new study session
   startSession: protectedProcedure
     .input(z.object({
