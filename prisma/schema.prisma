@@ -13,6 +13,7 @@ model User {
   username          String           @unique
   name              String
   hashedPassword    String
+  role              String           @default("user") // "admin" or "user"
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
   pgyLevel          Int?
@@ -31,6 +32,7 @@ model User {
   questions         Question[]
   studyRecords      StudyRecord[]
   studySessions     StudySession[]
+  answerKeys        AnswerKey[]
 
   @@map("users")
 }
@@ -166,4 +168,19 @@ model QuestionReport {
   user        User     @relation(fields: [userId], references: [id])
 
   @@map("question_reports")
+}
+
+model AnswerKey {
+  id             String   @id @default(cuid())
+  createdAt      DateTime @default(now())
+  examYear       Int
+  examPart       String   // "Part 1" or "Part 2"
+  questionNumber Int
+  correctAnswer  String   // A, B, C, D, E
+  userAnswer     String?  // If different from correct (for tracking wrong answers)
+  uploadedById   String
+  uploadedBy     User     @relation(fields: [uploadedById], references: [id])
+
+  @@unique([examYear, examPart, questionNumber])
+  @@map("answer_keys")
 }

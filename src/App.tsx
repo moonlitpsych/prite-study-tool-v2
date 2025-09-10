@@ -16,9 +16,12 @@ import { CommunityPage } from './pages/CommunityPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { UploadPage } from './pages/UploadPage';
 import { AnalyticsPage } from './pages/AnalyticsPage';
+import { AdminAnswerKeysPage } from './pages/AdminAnswerKeysPage';
+import { AdminAnswerKeyManualPage } from './pages/AdminAnswerKeyManualPage';
 
 // Components
 import { Layout } from './components/Layout';
+import { AdminRoute } from './components/AdminRoute';
 import { LoadingSpinner } from './components/ui/LoadingSpinner';
 
 function App() {
@@ -79,6 +82,8 @@ function App() {
         <Route path="/upload" element={<UploadPage />} />
         <Route path="/community" element={<CommunityPage />} />
         <Route path="/analytics" element={<AnalyticsPage />} />
+        <Route path="/admin/answer-keys" element={<AdminRoute><AdminAnswerKeysPage /></AdminRoute>} />
+        <Route path="/admin/answer-keys/manual" element={<AdminRoute><AdminAnswerKeyManualPage /></AdminRoute>} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

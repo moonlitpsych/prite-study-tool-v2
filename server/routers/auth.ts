@@ -95,6 +95,7 @@ export const authRouter = router({
           email: true,
           username: true,
           name: true,
+          role: true,
           hashedPassword: true,
           pgyLevel: true,
           institution: true,

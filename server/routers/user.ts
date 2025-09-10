@@ -1,7 +1,44 @@
 import { z } from 'zod';
+import bcrypt from 'bcryptjs';
 import { router, protectedProcedure, schemas } from '../lib/trpc.js';
+import { TRPCError } from '@trpc/server';
 
 export const userRouter = router({
+  // Change password
+  changePassword: protectedProcedure
+    .input(z.object({
+      currentPassword: z.string().min(1),
+      newPassword: z.string().min(6),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      // Get current user with password
+      const user = await ctx.prisma.user.findUnique({
+        where: { id: ctx.user.id },
+        select: { hashedPassword: true },
+      });
+
+      if (!user) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'User not found' });
+      }
+
+      // Verify current password
+      const isValidPassword = await bcrypt.compare(input.currentPassword, user.hashedPassword);
+      if (!isValidPassword) {
+        throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Current password is incorrect' });
+      }
+
+      // Hash new password
+      const hashedNewPassword = await bcrypt.hash(input.newPassword, 10);
+
+      // Update password
+      await ctx.prisma.user.update({
+        where: { id: ctx.user.id },
+        data: { hashedPassword: hashedNewPassword },
+      });
+
+      return { success: true };
+    }),
+
   // Add PRITE score
   addPriteScore: protectedProcedure
     .input(z.object({

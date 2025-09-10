@@ -11,7 +11,8 @@ import {
   LogOut,
   Trophy,
   Target,
-  BarChart3
+  BarChart3,
+  Settings
 } from 'lucide-react';
 
 interface LayoutProps {
@@ -20,9 +21,9 @@ interface LayoutProps {
 
 export const Layout = ({ children }: LayoutProps) => {
   const location = useLocation();
-  const { user, logout } = useAuthStore();
+  const { user, logout, isAdmin } = useAuthStore();
 
-  const navigation = [
+  const baseNavigation = [
     { name: 'Dashboard', href: '/', icon: Home },
     { name: 'Study', href: '/study', icon: BookOpen },
     { name: 'Questions', href: '/questions', icon: MessageSquare },
@@ -30,6 +31,10 @@ export const Layout = ({ children }: LayoutProps) => {
     { name: 'Analytics', href: '/analytics', icon: BarChart3 },
     { name: 'Community', href: '/community', icon: Users },
   ];
+
+  const navigation = isAdmin 
+    ? [...baseNavigation, { name: 'Admin', href: '/admin/answer-keys', icon: Settings }]
+    : baseNavigation;
 
   const isActive = (href: string) => {
     if (href === '/') {

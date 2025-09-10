@@ -1,7 +1,8 @@
-import { useState } from 'react';
-import { Check, Edit3, Save, X, Plus, Trash2, FileText } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Check, Edit3, Save, X, Plus, Trash2, FileText, Key, AlertCircle } from 'lucide-react';
 import { Button } from './ui/Button';
 import { Input } from './ui/Input';
+import { trpc } from '@/lib/trpc';
 
 interface QuestionOption {
   label: string;
@@ -36,6 +37,40 @@ export const QuestionEditor = ({ question, examYear = new Date().getFullYear(), 
   const [currentExamYear, setCurrentExamYear] = useState(examYear);
   const [currentExamPart, setCurrentExamPart] = useState(examPart);
   const [newTopic, setNewTopic] = useState('');
+  const [answerKeyLookup, setAnswerKeyLookup] = useState<{
+    found: boolean;
+    correctAnswer?: string;
+    userAnswer?: string;
+  } | null>(null);
+
+  // Query for answer key lookup
+  const { data: answerKeyData, refetch: refetchAnswerKey } = trpc.answerKeys.getCorrectAnswer.useQuery(
+    {
+      examYear: currentExamYear,
+      examPart: currentExamPart === 1 ? 'Part 1' : 'Part 2',
+      questionNumber: question.number,
+    },
+    {
+      enabled: false, // Don't auto-fetch, we'll trigger manually
+    }
+  );
+
+  // Effect to handle answer key data
+  useEffect(() => {
+    if (answerKeyData) {
+      setAnswerKeyLookup(answerKeyData);
+      if (answerKeyData.found && answerKeyData.correctAnswer && !selectedAnswer) {
+        setSelectedAnswer(answerKeyData.correctAnswer);
+      }
+    }
+  }, [answerKeyData, selectedAnswer]);
+
+  // Effect to lookup answer key when exam details change
+  useEffect(() => {
+    if (question.number && currentExamYear && currentExamPart) {
+      refetchAnswerKey();
+    }
+  }, [question.number, currentExamYear, currentExamPart, refetchAnswerKey]);
 
   const handleSave = () => {
     const finalQuestion = {
@@ -276,6 +311,30 @@ export const QuestionEditor = ({ question, examYear = new Date().getFullYear(), 
             ⚠️ Please select the correct answer before saving
           </div>
         )}
+
+        {/* Answer Key Lookup Status */}
+        {answerKeyLookup && (
+          <div className={`text-sm p-3 rounded-md flex items-center space-x-2 ${
+            answerKeyLookup.found 
+              ? 'bg-green-50 text-green-800' 
+              : 'bg-gray-50 text-gray-600'
+          }`}>
+            <Key className="h-4 w-4" />
+            {answerKeyLookup.found ? (
+              <div>
+                <span className="font-medium">Answer Key Found:</span> {answerKeyLookup.correctAnswer}
+                {answerKeyLookup.userAnswer && answerKeyLookup.userAnswer !== answerKeyLookup.correctAnswer && (
+                  <span className="text-red-600 ml-2">
+                    (Original answer: {answerKeyLookup.userAnswer})
+                  </span>
+                )}
+                <span className="text-xs ml-2 opacity-75">- Auto-selected from PRITE {currentExamYear}</span>
+              </div>
+            ) : (
+              <span>No answer key found for PRITE {currentExamYear} {currentExamPart === 1 ? 'Part 1' : 'Part 2'} Question {question.number}</span>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Topics */}
@@ -333,8 +392,8 @@ export const QuestionEditor = ({ question, examYear = new Date().getFullYear(), 
         <label className="relative inline-flex items-center cursor-pointer">
           <input 
             type="checkbox" 
-            checked={question.isPublic}
-            onChange={(e) => updateQuestion({ isPublic: e.target.checked })}
+            checked={editedQuestion.isPublic}
+            onChange={(e) => setEditedQuestion({ ...editedQuestion, isPublic: e.target.checked })}
             className="sr-only peer" 
           />
           <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
